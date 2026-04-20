@@ -3,54 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sanya Quest</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
-        
-        /* Зона фона */
-        #scene { 
-            flex: 1; position: relative; 
-            background-size: cover; background-position: center; 
-            background-color: #1a1a1a; overflow: hidden;
-        }
-
-        /* Зона персонажа - теперь он всегда поверх фона и четко снизу */
-        #hero { 
-            position: absolute; 
-            bottom: 0; left: 50%; 
-            transform: translateX(-50%);
-            width: auto; height: 90%; /* Подгоняем рост под экран */
-            z-index: 5;
-            display: none; /* Прячем до загрузки */
-        }
-
-        /* Текстовое поле */
-        #ui {
-            height: 35%; background: #000; 
-            border-top: 3px solid #ffcc00; padding: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; cursor: pointer; box-sizing: border-box;
-        }
-
-        #name { color: #ffcc00; font-weight: bold; font-size: 22px; margin-bottom: 8px; text-transform: uppercase; }
-        #text { font-size: 18px; line-height: 1.3; margin: 0; }
-        #hint { font-size: 10px; color: #444; margin-top: 15px; }
+        #scene { flex: 1; position: relative; background-size: cover; background-position: center; background-color: #1a1a1a; transition: opacity 0.3s; }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 5; display: none; pointer-events: none; }
+        #ui { height: 35%; background: #000; border-top: 3px solid #fc0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; box-sizing: border-box; }
+        #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 8px; min-height: 26px; }
+        #text { font-size: 18px; line-height: 1.3; min-height: 50px; }
     </style>
 </head>
 <body>
-
-<div id="game-container">
-    <div id="scene">
-        <img id="hero" src="" alt="">
+    <div id="game-container">
+        <div id="scene"><img id="hero" src="" alt=""></div>
+        <div id="ui" onclick="game.next()">
+            <div id="name">ЗАГРУЗКА...</div>
+            <div id="text">Подождите, история Сани начинается</div>
+        </div>
     </div>
-    <div id="ui" onclick="game.next()">
-        <div id="name">СИСТЕМА</div>
-        <div id="text">Загрузка истории...</div>
-        <div id="hint">ТАПАЙ ПО ТЕКСТУ</div>
-    </div>
-</div>
 
 <script>
+    // Кэшируем элементы один раз, чтобы не искать их постоянно
+    const el = {
+        name: document.getElementById('name'),
+        text: document.getElementById('text'),
+        scene: document.getElementById('scene'),
+        hero: document.getElementById('hero')
+    };
+
     const game = {
         idx: 0,
         imgs: {
@@ -62,41 +43,54 @@
         },
         story: [
             { n: "Саня", t: "Всё, пацаны. Орск подождёт, я в Москве! Погнали гулять.", c: 'bars', b: 'cab' },
-            { n: "Дима", t: "Саня, наконец-то! Столица тебя заждалась. Видок у тебя боевой!", c: 'dima', b: 'bars' },
+            { n: "Дима", t: "Саня, наконец-то! Столица тебя заждалась.", c: 'dima', b: 'bars' },
             { n: "Гоша", t: "Здорово! Предлагаю сразу в бар, обсудим твои новости.", c: 'gosha', b: 'bars' },
-            { n: "Саня", t: "Слушайте... Я вообще чего приехал. Я в Катю влюбился. Сильно.", c: 'bars', b: 'home' },
-            { n: "Система", t: "Конец демо-версии. Продолжение скоро!", c: 'bars', b: 'home' }
+            { n: "У Димы", t: "Слушайте... Я в Катю влюбился. Сильно. Что делать-то теперь?", c: 'bars', b: 'home' },
+            { n: "Система", t: "Конец демо-версии. Скоро будет продолжение!", c: 'bars', b: 'home' }
         ],
-
         update() {
             const s = this.story[this.idx];
             if (!s) return;
 
-            const scene = document.getElementById('scene');
-            const hero = document.getElementById('hero');
+            // Обновляем текст
+            el.name.innerText = s.n;
+            el.text.innerText = s.t;
 
-            // 1. Ставим фон
-            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+            // Обновляем фон (безопасно)
+            const bgUrl = this.imgs[s.b];
+            el.scene.style.backgroundImage = `url('${bgUrl}')`;
 
-            // 2. Логика персонажа: если это домашняя сцена, прячем отдельного героя
+            // Обновляем персонажа
             if (s.b === 'home') {
-                hero.style.display = 'none';
+                el.hero.style.display = 'none';
+                el.hero.src = ""; // Очищаем старую картинку
             } else {
-                hero.src = this.imgs[s.c];
-                hero.style.display = 'block';
+                const charUrl = this.imgs[s.c];
+                el.hero.src = charUrl;
+                el.hero.style.display = 'block';
             }
-
-            // 3. Текст
-            document.getElementById('name').innerText = s.n;
-            document.getElementById('text').innerText = s.t;
         },
-
         next() {
-            if (this.idx < this.story.length - 1) {
-                this.idx++;
-                this.update();
+            this.idx++;
+            if (this.idx >= this.story.length) {
+                this.idx = 0; // Зацикливаем для теста
             }
+            this.update();
         }
     };
 
-    // За
+    // ГЛАВНОЕ ИЗМЕНЕНИЕ: Не ждем onload, запускаем как только готов DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        // Небольшая задержка, чтобы WebView проснулся
+        setTimeout(() => {
+            game.update();
+        }, 100);
+    });
+
+    // Резервный запуск
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        game.update();
+    }
+</script>
+</body>
+</html>
