@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 3.8 - Full Story & FX</title>
+    <title>Sanya Quest V 4.1 - Hardcore Edition</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
-        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
+        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
         
         #start-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
@@ -18,14 +18,15 @@
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; box-shadow: 0 0 15px #fc0; }
         
-        /* Эффект провала */
-        .fail-fx #fill { background: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important; transition: width 0.3s ease-in !important; }
-        .shake { animation: shake 0.4s; }
+        /* Улучшенные эффекты провала */
+        .fail-state #fill { background: #f00 !important; box-shadow: 0 0 40px #f00 !important; transition: width 1.5s cubic-bezier(0.95, 0.05, 0.795, 0.035) !important; }
+        .red-alert { filter: sepia(1) saturate(5) hue-rotate(-50deg) !important; }
+        
+        .long-shake { animation: shake 1.8s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
-            0%, 100% { transform: translate(0, 0); }
-            25% { transform: translate(-10px, 5px); }
-            50% { transform: translate(10px, -5px); }
-            75% { transform: translate(-5px, 5px); }
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate3d(-6px, 0, 0); }
+            20%, 40%, 60%, 80% { transform: translate3d(6px, 0, 0); }
         }
 
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
@@ -41,7 +42,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 3.8 - ORSK & FULL STORY</div>
+    <div id="v">V 4.1 - LONG SHAKE & HARD TRAIN</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -80,6 +81,7 @@
             bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
             home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
+            dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
@@ -95,13 +97,13 @@
             { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это медленная, мучительная смерть. Оно требует перемен, требует крика, требует реальных действий. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts' },
             { n: "Рассказчик", t: "Облака под крылом самолета кажутся такими же холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди Москва, впереди встреча, которая либо подарит жизнь, либо окончательно его добьет.", b: 'thoughts' },
             { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд? В Москве сегодня будет жарко!", b: 'bar_bg', c: 'gosha' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
             { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает изнутри. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — наши проблемы.", b: 'home_bg', c: 'dima' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
             { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima' },
+            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home' },
             { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
             { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
@@ -195,6 +197,7 @@
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
                 overlay.style.display = 'flex';
+                overlay.classList.remove('fail-state');
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 document.getElementById('game-hint').innerText = "ЖМИ БЫСТРЕЕ!";
                 this.startDrain(s.hasGame);
@@ -209,7 +212,8 @@
             this.stopDrain();
             this.drainInterval = setInterval(() => {
                 if (this.score > 0) {
-                    let penalty = (type === "train") ? 1.3 : (1.9 + (this.score / 20));
+                    // УВЕЛИЧЕННАЯ СЛОЖНОСТЬ ДЛЯ ПОЕЗДА (2.5 вместо 1.3)
+                    let penalty = (type === "train") ? 2.5 : (1.9 + (this.score / 20));
                     this.score -= penalty;
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
                 }
@@ -228,26 +232,26 @@
             e.preventDefault(); e.stopPropagation();
             if (!this.story[this.idx].hasGame) return;
             const type = this.story[this.idx].hasGame;
-            const power = (type === "train") ? 8 : 11;
+            const power = (type === "train") ? 9 : 11;
             this.score += power;
             
-            // FX ТРОЛЛИНГ ГОШИ
+            // УДЛИНЕННАЯ ТРЯСКА ПРИ ОБЛОМЕ
             if (type === "nuggets" && this.score >= 90) {
                 this.stopDrain();
-                const container = document.getElementById('game-container');
                 const overlay = document.getElementById('overlay');
-                overlay.classList.add('fail-fx');
-                container.classList.add('shake');
+                const container = document.getElementById('game-container');
                 
+                overlay.classList.add('fail-state');
+                container.classList.add('long-shake', 'red-alert');
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
                 
                 setTimeout(() => {
-                    overlay.classList.remove('fail-fx');
-                    container.classList.remove('shake');
+                    container.classList.remove('long-shake', 'red-alert');
+                    overlay.classList.remove('fail-state');
                     this.story[this.idx].hasGame = false;
                     this.next();
-                }, 500);
+                }, 1800); // 1.8 секунды хаоса
                 return;
             }
 
