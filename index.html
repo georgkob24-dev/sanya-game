@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 8.0 - Orenburg Expansion</title>
+    <title>Sanya Quest V 8.0 - Full Original + Expansion</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
@@ -46,18 +46,20 @@
     <div id="version-tag">V 8.0</div>
 
     <div id="start-screen">
-        <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
-        <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
+        <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px; text-shadow: 0 0 20px rgba(252,204,0,0.4);">SANYA QUEST</h1>
+        <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ ПУТЬ</button>
         <button class="reset-btn" onclick="game.confirmReset()">СБРОСИТЬ ПРОГРЕСС</button>
     </div>
 
     <div id="fail-screen">
         <h1 style="color:#fff; font-size: 32px; margin-bottom: 10px;">СМЕНА ПРОВАЛЕНА</h1>
+        <p style="color: #ccc; margin-bottom: 25px;">Ты не справился с управлением или проспал наггетсы.</p>
         <button class="main-btn" onclick="game.restartLevel()">ПОПРОБОВАТЬ СНОВА</button>
     </div>
 
     <div id="end-screen">
-        <h2 style="color:#fc0; font-size: 32px;">КОНЕЦ ГЛАВЫ</h2>
+        <h2 style="color:#fc0; font-size: 32px; margin-bottom: 10px;">ГЛАВА ЗАВЕРШЕНА</h2>
+        <p style="color: #fff; margin-bottom: 30px;">Саня нашел свой путь... или только начал его.</p>
         <button class="main-btn" onclick="game.resetSave()">В НАЧАЛО</button>
     </div>
 
@@ -68,7 +70,7 @@
         <div id="scene"></div>
         <img id="hero" src="" alt="">
         <div id="overlay" onmousedown="game.tap(event)">
-            <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
+            <h2 id="game-title" style="margin:0; color:#fc0; text-transform: uppercase; letter-spacing: 4px;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
             <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
@@ -76,7 +78,7 @@
             <div id="choice-container"></div>
             <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
-            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">←</button>
+            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">← НАЗАД</button>
             <button id="next-btn" onclick="event.stopPropagation(); game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
@@ -99,39 +101,47 @@
             dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
-            // НОВЫЕ ИЗОБРАЖЕНИЯ
+            gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg",
             orenburg: "https://i.ibb.co/RT7Cx4hr/df3f4211-edb6-4300-a816-ae9feaef3bda.png",
-            sonya_home: "https://i.ibb.co/7tVzn2Zx/Chat-GPT-Image-21-2026-01-11-15.png",
-            kitchen_eggs: "https://i.ibb.co/mrWfGrYh/1776641563597.png", // Используем фон кухни
-            tattoo_katya: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png", 
-            park_final: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png"
+            sonya_home: "https://i.ibb.co/7tVzn2Zx/Chat-GPT-Image-21-2026-01-11-15.png"
         },
         colors: { 
             "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", 
             "Артур": "#00dfff", "Соня": "#ff69b4", "Катя": "#b388ff", "Работа": "#fc0", "Рассказчик": "#888" 
         },
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', c: 'work', hasGame: "train" },
-            { n: "Саня", t: "Гул самолёта... я не могу сомкнуть глаз. Все мысли только о Кате.", b: 'thoughts', c: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Ну что, по первой за приезд?", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл! Доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Саня", t: "Ну всё, Гоша, делись наггетсами!", b: 'home_bg', c: 'none', hasGame: "nuggets", shakeOnType: true },
+            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок в Орске. Каждый день как день сурка.", b: 'morning', c: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Саня, не спи за пультом!", b: 'work', c: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух... Смена закрыта. Наконец-то отпуск! РЖД, увидимся через две недели.", b: 'airport', c: 'none' },
+            { n: "Саня", t: "Всё, вещи собраны. Москва ждёт. Надеюсь, этот город поможет мне забыться.", b: 'airport', c: 'none' },
+            { n: "Рассказчик", t: "Гул самолёта... А внутри — пустота. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'none' },
+            { n: "Рассказчик", t: "Саня смотрит в окно на облака. В его душе разверзается настоящая бездна.", b: 'thoughts', c: 'none' },
+            { n: "Рассказчик", t: "Он знает: у неё есть парень. Он не хочет врываться в чужую крепость, но и молчать больше нет сил.", b: 'thoughts', c: 'none' },
+            { n: "Дима", t: "Саня! Брат! Ну ты и вымахал! Здорово, машинист!", b: 'bar_bg', c: 'dima' },
+            { n: "Дима", t: "Ну что, по первой за приезд? За твой долгожданный отпуск!", b: 'bar_bg', c: 'dima' },
+            { n: "Саня", t: "Димас, рад тебя видеть! Давай по чуть-чуть, мне ещё к Гоше заглянуть надо.", b: 'bar_bg', c: 'none' },
+            { n: "Гоша", t: "Опа! Кто приехал! А я тут как раз наггетсы заказал. Доставка вовремя!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Гоша", t: "Но предупреждаю сразу: наггетсы — это святое. Я их просто так не отдам!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Саня", t: "Ах так? Ну держись, Гоша! Сейчас я покажу тебе силу железнодорожных войск!", b: 'home_bg', c: 'none', hasGame: "nuggets", shakeOnType: true },
+            { n: "Гоша", t: "Ахахах! Ребята, вы правда думали, что сможете их отобрать? Все наггетсы мои!", b: 'home_bg', c: 'gosha_troll' },
+            { n: "Саня", t: "Ладно, Гошан, подавись своими наггетсами. Но посидели круто.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны, спасибо за приём в Москве. Но мне пора двигать дальше. Оренбург зовёт.", b: 'bar_bg', c: 'none' },
+            { n: "Дима", t: "К Артуру? Ну давай, Саня. Передавай там всем нашим салам!", b: 'bar_bg', c: 'dima' },
             
             // --- НОВАЯ ЧАСТЬ 8.0 ---
-            { n: "Саня", t: "Ну ладно, пацаны. Посидели круто, но мне пора. Беру билеты в Оренбург!", b: 'bar_bg', c: 'none' },
-            { n: "Гоша", t: "Уже улетаешь? Ну, давай, Саня. Удачного пути!", b: 'bar_bg', c: 'gosha' },
-            { n: "Саня", t: "Самолёт Оренбургских авиаций. Лечу к Артуру и Соне.", b: 'airport', c: 'none' },
-            { n: "Артур", t: "Салам, Саня! Мамбетка ты моя, наконец-то добрался!", b: 'orenburg', c: 'none' },
-            { n: "Соня", t: "Санечка, привет! Проходи, мы как раз чай поставили.", b: 'orenburg', c: 'none' },
-            { n: "Соня", t: "Саш, я тут с Катей общалась... Она про тебя спрашивала. Знаешь, позови её к нам, когда мы уедем.", b: 'sonya_home', c: 'none' },
-            { n: "Артур", t: "Короче, брат. Мы с Соней на неделю в Казахстан отчаливаем. Хата твоя, пользуйся моментом!", b: 'orenburg', c: 'none' },
-            { n: "Саня", t: "Пасха... Катя пришла ко мне. Мы стоим на кухне, и она учит меня красить яйца.", b: 'kitchen_eggs', c: 'none' },
-            { n: "Катя", t: "Смотри, Саш, нужно аккуратно... Вот так. У тебя получается!", b: 'kitchen_eggs', c: 'none' },
-            { n: "Саня", t: "Потом мы смотрели 'Хоббита'. Просто лежали рядом, было так спокойно. Мы не целовались, но это было не нужно.", b: 'thoughts', c: 'none' },
-            { n: "Саня", t: "Через пару дней я пришел к ней бить тату. Она сосредоточена на работе...", b: 'tattoo_katya', c: 'none' },
-            { n: "Катя", t: "Саш... мы расстались с моим парнем. И знаешь... я люблю тебя.", b: 'tattoo_katya', c: 'none' },
-            { n: "Саня", t: "Этот день мы провели только вдвоем. Гуляли, смеялись, катались на аттракционах. Кажется, я наконец-то дома.", b: 'park_final', c: 'none' }
+            { n: "Саня", t: "Снова аэропорт. Снова небо. Оренбург уже под крылом.", b: 'airport', c: 'none' },
+            { n: "Артур", t: "Салам, Саня! Кандай, мамбетка? Наконец-то долетел до наших краев!", b: 'orenburg', c: 'none' },
+            { n: "Соня", t: "Санечка, привет! Проходи, мы тебя заждались. Чай уже готов.", b: 'orenburg', c: 'none' },
+            { n: "Соня", t: "Слушай, Саш... Мы с Катей общались на днях. Она про тебя спрашивала.", b: 'sonya_home', c: 'none' },
+            { n: "Соня", t: "Мы с Артуром завтра в Казахстан на неделю уезжаем. Позови её сюда. Хата пустая будет.", b: 'sonya_home', c: 'none' },
+            { n: "Артур", t: "Короче, бауырым, ключи на столе. Не подведи! Отдыхай как следует.", b: 'orenburg', c: 'none' },
+            { n: "Саня", t: "Пасха... Я решился. Катя пришла. Мы стоим на кухне, и она учит меня красить яйца.", b: 'home_bg', c: 'none' },
+            { n: "Катя", t: "Смотри, Саш... Нужно аккуратно опускать в краску. Вот так. Видишь?", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Вечер пролетел незаметно. Они смотрели 'Хоббита', укрывшись одним пледом.", b: 'thoughts', c: 'none' },
+            { n: "Рассказчик", t: "Они просто лежали рядом. Поцелуя не было, но слова были уже не нужны.", b: 'thoughts', c: 'none' },
+            { n: "Саня", t: "Через пару дней я пришел к ней в салон. Она била мне тату, сосредоточенная и тихая.", b: 'work', c: 'none' },
+            { n: "Катя", t: "Саш... я должна сказать. Я рассталась с ним. И я... я люблю тебя.", b: 'work', c: 'none' },
+            { n: "Саня", t: "Тот день в парке аттракционов я не забуду никогда. Кажется, я наконец-то дома.", b: 'morning', c: 'none' }
         ],
 
         async init() {
@@ -142,7 +152,7 @@
                 musicGain = audioCtx.createGain(); musicGain.connect(audioCtx.destination);
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 this.startMusic();
-            } catch(e) {}
+            } catch(e) { console.log("Audio fail"); }
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
             this.update();
