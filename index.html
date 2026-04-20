@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 3.7 - Gosha Update</title>
+    <title>Sanya Quest V 3.8 - Full Story & FX</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
@@ -17,8 +17,17 @@
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; box-shadow: 0 0 15px #fc0; }
-        .nugget-mode #fill { background: #ff4400; box-shadow: 0 0 20px #ff4400; }
         
+        /* Эффект провала */
+        .fail-fx #fill { background: #ff0000 !important; box-shadow: 0 0 30px #ff0000 !important; transition: width 0.3s ease-in !important; }
+        .shake { animation: shake 0.4s; }
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-10px, 5px); }
+            50% { transform: translate(10px, -5px); }
+            75% { transform: translate(-5px, 5px); }
+        }
+
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; }
@@ -32,11 +41,10 @@
     </style>
 </head>
 <body>
-    <div id="v">V 3.7 - GOSHA PURE EVIL</div>
+    <div id="v">V 3.8 - ORSK & FULL STORY</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
-        <p style="color:#888; margin-bottom:40px;">В главных ролях: Саня, Дима и хитрый Гоша</p>
         <button id="start-btn" onclick="game.init()">НАЧАТЬ ИГРАТЬ</button>
     </div>
 
@@ -63,7 +71,7 @@
     let musicGain = null;
 
     const game = {
-        idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null, isTrolled: false,
+        idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -71,24 +79,29 @@
             thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
             bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
             home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
-            nuggets_bg: "https://i.ibb.co/TBpBfCth/photo-2026-04-20-15-43-34.jpg",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
         },
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орске, ты меня когда-нибудь отпустишь?", b: 'morning' },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня!", b: 'work', hasGame: "train" },
-            { n: "Саня", t: "Фух, наконец-то отпуск! Лечу в Москву!", b: 'airport' },
-            { n: "Саня", t: "Гул самолёта... Все мысли о Кате.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Любовь к Кате — это яростный шторм. Саня знает: у неё есть парень. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
-            { n: "Рассказчик", t: "Ночь опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Пацаны... я должен вам выговориться. Ситуация с Катей меня просто уничтожает.", b: 'home_bg', c: 'none' },
-            { n: "Гоша", t: "Правильно Диман говорит! О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport' },
+            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути. Он любит её каждой клеткой, но эта любовь давно отравлена неизвестностью.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар тяжелого молота по наковальне его сердца.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях. Но и стоять в стороне сил больше нет.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это медленная, мучительная смерть. Оно требует перемен, требует крика, требует реальных действий. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Облака под крылом самолета кажутся такими же холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди Москва, впереди встреча, которая либо подарит жизнь, либо окончательно его добьет.", b: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд? В Москве сегодня будет жарко!", b: 'bar_bg', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает изнутри. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — наши проблемы.", b: 'home_bg', c: 'dima' },
+            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima' },
             { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
             { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
@@ -163,8 +176,6 @@
         update() {
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             const s = this.story[this.idx];
-            
-            // Фон теперь всегда home_bg для сцены на кухне, даже когда Гоша смеется
             document.getElementById('scene').style.backgroundImage = `url('${this.imgs[s.b]}')`;
             
             const hero = document.getElementById('hero');
@@ -184,7 +195,6 @@
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
                 overlay.style.display = 'flex';
-                overlay.className = (s.hasGame === "nuggets") ? "nugget-mode" : "";
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 document.getElementById('game-hint').innerText = "ЖМИ БЫСТРЕЕ!";
                 this.startDrain(s.hasGame);
@@ -218,16 +228,26 @@
             e.preventDefault(); e.stopPropagation();
             if (!this.story[this.idx].hasGame) return;
             const type = this.story[this.idx].hasGame;
-            const power = (type === "train") ? 8 : 10;
+            const power = (type === "train") ? 8 : 11;
             this.score += power;
             
-            // ЛОВУШКА ГОШИ НА 90%
+            // FX ТРОЛЛИНГ ГОШИ
             if (type === "nuggets" && this.score >= 90) {
                 this.stopDrain();
+                const container = document.getElementById('game-container');
+                const overlay = document.getElementById('overlay');
+                overlay.classList.add('fail-fx');
+                container.classList.add('shake');
+                
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
-                this.story[this.idx].hasGame = false;
-                setTimeout(() => this.next(), 100);
+                
+                setTimeout(() => {
+                    overlay.classList.remove('fail-fx');
+                    container.classList.remove('shake');
+                    this.story[this.idx].hasGame = false;
+                    this.next();
+                }, 500);
                 return;
             }
 
