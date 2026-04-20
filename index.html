@@ -3,339 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 8.0 - Full Original Logic</title>
+    <title>Sanya Quest V 7.6 - Final Chapter</title>
     <style>
-        /* =========================================
-           БЛОК СТИЛЕЙ (ПОЛНАЯ ВЕРСИЯ 7.6+)
-           ========================================= */
-        body { 
-            margin: 0; 
-            background: #000; 
-            color: #fff; 
-            font-family: 'Georgia', serif; 
-            overflow: hidden; 
-            touch-action: manipulation; 
-            user-select: none;
-        }
-
-        #game-container { 
-            display: none; 
-            flex-direction: column; 
-            width: 100vw; 
-            height: 100vh; 
-            position: relative; 
-            background: #000; 
-        }
-
-        #version-tag { 
-            position: fixed; 
-            top: 10px; 
-            left: 60px; 
-            z-index: 4000; 
-            color: #fc0; 
-            font-weight: bold; 
-            font-size: 18px; 
-            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; 
-            pointer-events: none; 
-        }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
+        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
         
-        #start-screen, #end-screen, #fail-screen { 
-            position: fixed; 
-            top:0; 
-            left:0; 
-            width: 100%; 
-            height:100%; 
-            background: radial-gradient(circle, #222 0%, #000 100%); 
-            z-index: 2000; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            text-align: center; 
-        }
+        #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; }
 
+        #start-screen, #end-screen, #fail-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/Zz1Zgx4p/Chat-GPT-Image-21-2026-02-12-47.png'); background-size: cover; z-index: 2100; }
         #fail-screen { display: none; background: #900; z-index: 2500; }
-        #end-screen { display: none; background: #000; z-index: 2100; }
 
-        .main-btn { 
-            background: #fc0; 
-            color: #000; 
-            border: none; 
-            padding: 20px 50px; 
-            font-weight: bold; 
-            font-size: 20px; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); 
-            margin-bottom: 15px; 
-            transition: transform 0.1s, box-shadow 0.2s; 
-        }
+        .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
+        .reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 13px; border-radius: 5px; cursor: pointer; }
 
-        .main-btn:hover { box-shadow: 0 0 40px rgba(252, 204, 0, 0.7); }
-        .main-btn:active { transform: scale(0.95); }
+        #fade-layer { position: absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index: 150; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        .fade-active { opacity: 1 !important; }
 
-        .reset-btn { 
-            background: transparent; 
-            color: #666; 
-            border: 1px solid #444; 
-            padding: 10px 20px; 
-            font-size: 13px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            margin-top: 20px;
-        }
-
-        #fade-layer { 
-            position: absolute; 
-            top:0; 
-            left:0; 
-            width:100%; 
-            height:100%; 
-            background: #000; 
-            z-index: 150; 
-            pointer-events: none; 
-            opacity: 0; 
-            transition: opacity 0.5s; 
-        }
-
-        #scene { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 65%; 
-            background-size: cover; 
-            background-position: center; 
-            transition: filter 0.5s, transform 0.5s; 
-        }
-
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
+        
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transform-origin: bottom center; }
+        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
+        #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
+        #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
+        
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; cursor: pointer; }
+        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; pointer-events: none; }
+        
+        #choice-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 110; cursor: default; }
+        .choice-btn { background: #222; color: #fc0; border: 1px solid #fc0; padding: 12px 20px; margin: 8px; width: 85%; border-radius: 5px; font-size: 16px; cursor: pointer; }
 
-        #hero { 
-            position: absolute; 
-            bottom: 0; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            height: 95%; 
-            z-index: 5; 
-            display: none; 
-            pointer-events: none; 
-            transition: opacity 0.5s ease; 
-            filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); 
-            transform-origin: bottom center; 
-        }
+        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
+        #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
 
-        #ui { 
-            position: absolute; 
-            bottom: 0; 
-            width: 100%; 
-            height: 35%; 
-            background: #000; 
-            border-top: 3px solid #fc0; 
-            display: flex; 
-            flex-direction: column; 
-            box-sizing: border-box; 
-            padding: 15px 20px; 
-            z-index: 100; 
-            cursor: pointer; 
-        }
+        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; }
+        #text { font-size: 17px; line-height: 1.4; color: #eee; pointer-events: none; }
+        
+        #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 3000; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 
-        #text-area { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding-bottom: 45px; 
-            position: relative; 
-            pointer-events: none; 
-        }
+        /* ЭФФЕКТЫ ТЕКСТА */
+        .shake-text { display: inline-block; animation: text-shake-anim 0.2s infinite; color: #f44 !important; }
+        @keyframes text-shake-anim { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -1px); } 50% { transform: translate(-1px, 1px); } 75% { transform: translate(1px, -1px); } 100% { transform: translate(1px, 1px); } }
 
-        #name { 
-            font-weight: bold; 
-            font-size: 20px; 
-            margin-bottom: 8px; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-        }
-
-        #text { 
-            font-size: 18px; 
-            line-height: 1.5; 
-            color: #eee; 
-        }
-
-        #overlay { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.85); 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 50; 
-            cursor: pointer; 
-        }
-
-        #bar-container { 
-            width: 80%; 
-            height: 40px; 
-            border: 3px solid #fff; 
-            border-radius: 25px; 
-            overflow: hidden; 
-            margin-top: 20px; 
-            background: rgba(255,255,255,0.1); 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        #fill { 
-            width: 0%; 
-            height: 100%; 
-            background: linear-gradient(90deg, #f0ad4e, #fc0); 
-            transition: width 0.08s linear; 
-        }
-
-        #next-btn { 
-            position: absolute; 
-            bottom: 15px; 
-            right: 20px; 
-            background: #fc0; 
-            color: #000; 
-            border: none; 
-            padding: 12px 35px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            display: none; 
-            border-radius: 5px; 
-            z-index: 105; 
-        }
-
-        #prev-btn { 
-            position: absolute; 
-            bottom: 15px; 
-            left: 20px; 
-            background: rgba(255,255,255,0.1); 
-            color: #fff; 
-            border: 1px solid #444; 
-            padding: 12px 20px; 
-            cursor: pointer; 
-            display: none; 
-            border-radius: 5px; 
-            z-index: 105; 
-        }
-
-        #sound-btn { 
-            position: fixed; 
-            top: 10px; 
-            left: 10px; 
-            z-index: 3000; 
-            font-size: 20px; 
-            cursor: pointer; 
-            background: rgba(0,0,0,0.6); 
-            border: 1px solid #fc0; 
-            border-radius: 50%; 
-            width: 45px; 
-            height: 45px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-
-        /* АНИМАЦИИ И ЭФФЕКТЫ */
-        .shake-text { 
-            display: inline-block; 
-            animation: text-shake-anim 0.2s infinite; 
-            color: #f44 !important; 
-        }
-
-        .heart-text { 
-            display: inline-block; 
-            color: #ff69b4 !important; 
-            text-shadow: 0 0 10px rgba(255,105,180,0.8); 
-            font-weight: bold;
-        }
-
-        @keyframes text-shake-anim { 
-            0% { transform: translate(1px, 1px); } 
-            25% { transform: translate(-1px, -1px); } 
-            50% { transform: translate(-1px, 1px); } 
-            100% { transform: translate(1px, 1px); } 
-        }
-
+        .heart-text { display: inline-block; color: #ff69b4 !important; text-shadow: 0 0 10px rgba(255,105,180,0.8); font-weight: bold; animation: pulse-heart 1.5s infinite; }
+        @keyframes pulse-heart { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        
+        .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
+        @keyframes hero-enter-anim { from { opacity: 0; transform: translate(-50%, 40px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
-        @keyframes hero-breathing { 
-            0%, 100% { transform: translate(-50%, 0) scale(1); } 
-            50% { transform: translate(-50%, -10px) scale(1.02); } 
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 0.6; }
-        }
+        @keyframes hero-breathing { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, -10px) scale(1.02); } }
+        
+        .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); } 20%, 40%, 60%, 80% { transform: translate(10px, 0); } }
+        .red-alert { filter: sepia(1) saturate(15) hue-rotate(-50deg) !important; }
+        @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="version-tag">V 8.0</div>
-    <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
+    <div id="version-tag">V 7.6</div>
 
     <div id="start-screen">
-        <h1 style="color:#fc0; font-size: 48px; text-shadow: 0 0 30px rgba(252,204,0,0.5); margin-bottom: 10px;">SANYA QUEST</h1>
-        <p style="color:#aaa; font-size: 18px; margin-bottom: 40px;">Глава: Путь к Кате</p>
-        <button class="main-btn" onclick="game.init()">ИГРАТЬ</button>
-        <button class="reset-btn" onclick="game.confirmReset()">СБРОСИТЬ СОХРАНЕНИЯ</button>
+        <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
+        <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
+        <button class="reset-btn" onclick="game.confirmReset()">СБРОСИТЬ ПРОГРЕСС</button>
     </div>
 
     <div id="fail-screen">
-        <h1 style="color:#fff; font-size: 36px;">ПРОВАЛ</h1>
-        <p style="margin-bottom: 30px; font-size: 18px; color: #ccc;">Силы покинули тебя в самый важный момент.</p>
-        <button class="main-btn" onclick="game.restartLevel()">ПЕРЕЗАГРУЗКА</button>
+        <h1 style="color:#fff; font-size: 32px; margin-bottom: 10px;">СМЕНА ПРОВАЛЕНА</h1>
+        <button class="main-btn" onclick="game.restartLevel()">ПОПРОБОВАТЬ СНОВА</button>
     </div>
 
     <div id="end-screen">
-        <h2 style="color:#fc0; font-size: 36px;">ФИНАЛ</h2>
-        <p style="font-size: 20px; color: #eee; padding: 0 30px;">Их история только начинается...</p>
-        <button class="main-btn" onclick="game.resetSave()">НА ГЛАВНУЮ</button>
+        <h2 style="color:#fc0; font-size: 32px; margin-bottom: 20px;">КОНЕЦ ГЛАВЫ</h2>
+        <button class="main-btn" onclick="game.resetSave()">В НАЧАЛО</button>
     </div>
+
+    <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
         <div id="fade-layer"></div>
         <div id="scene"></div>
-        <img id="hero" src="" class="hero-idle">
-        
+        <img id="hero" src="" alt="">
         <div id="overlay" onmousedown="game.tap(event)">
-            <h2 id="game-title" style="margin:0; color:#fc0; font-size: 28px;">МИНИ-ИГРА</h2>
+            <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
-            <p style="color: #fff; margin-top: 20px; font-weight: bold; animation: pulse 0.8s infinite;">ЖМИ БЫСТРО!</p>
+            <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
-
         <div id="ui" onclick="game.handleUiClick()">
-            <div id="name"></div>
+            <div id="choice-container"></div>
+            <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
-            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">← НАЗАД</button>
-            <button id="next-btn" onclick="event.stopPropagation(); game.next()">ДАЛЕЕ →</button>
+            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">←</button>
+            <button id="next-btn" onclick="event.stopPropagation(); game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
 
 <script>
-    /* =========================================
-       ЛОГИКА ИГРЫ (ПОЛНЫЙ ДВИЖОК)
-       ========================================= */
     let audioCtx = null;
     let musicGain = null;
-
     const game = {
-        idx: 0, 
-        isTyping: false, 
-        score: 0, 
-        gameActive: false, 
-        isMuted: false,
-        tTimer: null, 
-        dTimer: null,
-        currentFullText: "", 
-        currentShake: false, 
-        currentHeart: false,
-
+        idx: 0, score: 0, isTyping: false, isMuted: false, 
+        drainInterval: null, gameActive: false, gameStartTime: 0,
+        tempText: null, currentFullText: "", currentShake: false, currentHeart: false,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -344,8 +115,12 @@
             bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
             home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
+            dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
+            gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg",
+            artur_sonya: "https://i.ibb.co/RT7Cx4hr/df3f4211-edb6-4300-a816-ae9feaef3bda.png",
+            sonya_alone: "https://i.ibb.co/7tVzn2Zx/Chat-GPT-Image-21-2026-01-11-15.png",
             artur_alone: "https://i.ibb.co/MkyMz1qd/image-1776707959628128.png",
             easter_eggs: "https://i.ibb.co/20QGcHYy/2112f813-76ff-4959-8407-9d040cd32d81.png",
             tattoo_work: "https://i.ibb.co/XZ4CnSBp/Chat-GPT-Image-21-2026-02-05-41.png",
@@ -353,229 +128,278 @@
             the_kiss: "https://i.ibb.co/s8SJrcp/8a8731f4-a7c7-4f05-a492-8de012834638.png",
             final_park: "https://i.ibb.co/Zz1Zgx4p/Chat-GPT-Image-21-2026-02-12-47.png"
         },
-
         colors: { 
             "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", 
-            "Артур": "#00dfff", "Катя": "#b388ff", "Рассказчик": "#888", "Работа": "#fc0" 
+            "Работа": "#fc0", "Рассказчик": "#888", "Артур": "#00dfff", 
+            "Соня": "#ff66cc", "Катя": "#b388ff" 
         },
-
-        /* СЮЖЕТНЫЙ МАССИВ */
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот знакомый до боли потолок в Орске. Трещина в углу стала как будто больше. Каждый день здесь — это вязкий день сурка. В голове только одна мысль: когда это кончится?", b: 'morning' },
-            { n: "Работа", t: "Так, смена началась! Саня, соберись! Погнали давить тягу, состав сам себя не доставит! Только ты и железная мощь под тобой! Не подведи депо!", b: 'work', hasGame: "train" },
-            { n: "Саня", t: "Фух... Смена закрыта. Руки до сих пор гудят от вибрации контроллера. Но сегодня всё иначе. Наконец-то отпуск! РЖД, увидимся через две недели. Я улетаю.", b: 'airport' },
-            { n: "Рассказчик", t: "Гул самолётных двигателей убаюкивает, но внутри у Сани — звенящая пустота. Все мысли, как по рельсам, возвращаются к одному и тому же... к Кате. Он смотрит в иллюминатор на облака, и в его душе разверзается настоящая бездна. Он знает: у неё есть парень. Он не хочет разрушать чужое счастье, но и молчать больше нет сил. Эта неопределенность убивает его медленнее, чем тяжелая смена в депо.", b: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Ну ты и вымахал! Здорово, машинист! Москва тебя заждалась. Ну что, по первой за приезд? За твой долгожданный отдых и за то, что ты наконец-то вырвался из своего Орска!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Опа! Кто приехал! А я тут как раз наггетсы заказал. Доставка прямо к твоему появлению. Но предупреждаю сразу: это моя добыча! Кто успел — тот и съел!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Саня", t: "Ах так? Ну держись, Гошан! Сейчас я покажу тебе, на что способны железнодорожные войска, когда они голодны и злы!", b: 'home_bg', hasGame: "nuggets", shakeOnType: true },
-            { n: "Гоша", t: "Ахахах! Ребята, вы правда думали, что сможете их отобрать? Все наггетсы мои! Я тренировал реакцию в играх годами, вам меня не победить!", b: 'home_bg', c: 'gosha_troll' },
-            { n: "Артур", t: "Салям, Саня! Как тебе мои напутствия? Слушай сюда внимательно: жизнь — она как железная дорога. Главное — не сворачивать с рельс своего сердца, даже если стрелку перевели не туда. Ты же не боишься, правда? Всё будет хорошо, бауырым. Просто верь в себя.", b: 'morning', c: 'artur_alone' },
-            { n: "Саня", t: "Я всё-таки решился. Позвал Катю домой к Артуру и Соне. Решил, что это идеальный момент. Сказал ей, что совершенно не умею красить яйца к Пасхе. Даже Артуру в панике написал: 'Брат, как их вообще варить, чтобы они не превратились в камни?!'", b: 'easter_eggs' },
-            { n: "Артур", t: "Ахаха! Саня, ты серьезно? Машинист тяжелых составов не может справиться с обычным куриным яйцом? Ну ты даешь! Короче, бауырым, просто клади в воду и следи за таймером. И не позорь меня перед дамой, будь мужиком!", b: 'easter_eggs', c: 'artur_alone' },
-            { n: "Рассказчик", t: "Сане стало жутко неловко от подколов Артура. Лицо предательски покраснело. Но Катя лишь тепло и искренне улыбнулась. Весь вечер они провели вместе: она учила его магии покраски, они смеялись и болтали обо всем на свете, забыв про время. В конце Саня угостил её куличом. В этом доме наконец-то стало по-настоящему уютно и спокойно. Кажется, бездна начала отступать.", b: 'easter_eggs' },
-            { n: "Рассказчик", t: "Прошло пару дней. Саня пришел к ней в тату-салон. Жужжание машинки, специфический запах антисептика... Катя била ему новую татуировку. Она была предельно сосредоточена, её лицо находилось совсем близко, он чувствовал её дыхание. В этой тишине воздух будто загустел от невысказанных слов.", b: 'tattoo_work' },
-            { n: "Катя", t: "Саш... я больше не могу это держать в себе. Я рассталась с ним. Всё кончено. Совсем. И я поняла... я люблю тебя. Давно люблю. Очень. ♥♥♥", b: 'katya_love', isHeart: true },
-            { n: "Рассказчик", t: "Саша замер. Сердце пропустило удар, а потом забилось с такой силой, что казалось, оно сейчас выпрыгнет. Он не верил своим ушам. Неужели этот бесконечный путь из Орска привел его именно сюда? Оказывается, она ему тоже нравилась безумно долго, но он считал её недосягаемой мечтой. Это был лучший день в его жизни, день, которого он совсем не ожидал и о котором боялся даже мечтать.", b: 'katya_love' },
-            { n: "Рассказчик", t: "Она осторожно откладывает инструмент в сторону и берет его за щеку своей теплой ладонью. Их взгляды встречаются, и весь мир за пределами этой комнаты просто перестает существовать. Нет больше ни работы, ни проблем, ни расстояний. Первый поцелуй... чувства, которые копились годами, наконец-то вырвались на свободу, переполняя обоих.", b: 'the_kiss' },
-            { n: "Рассказчик", t: "Финал этой поездки был сказочным. Они пошли в парк аттракционов. Ветер в лицо на самой вершине колеса обозрения, её рука крепко сжимает его руку, и ощущение полного, абсолютного счастья накрывает с головой. Они и подумать не могли, что всё сложится именно так. Но судьба любит смелых и искренних. Саня наконец-то нашел свой настоящий дом. В её глазах. Конец.", b: 'final_park' }
+            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
+            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts', choices: ["Написать ей?", "Просто смотреть в окно"] },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это смерть. Он чертовски устал быть просто 'хорошим другом'.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда.", b: 'thoughts', c: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none', choices: ["Рассказать всё как есть", "Отшутиться"] },
+            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро.", b: 'home_bg', c: 'dima_home' },
+            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Дима", t: "Ха-ха-ха! Гошан, хорош заливать, делись давай!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
+            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets", shakeOnType: true },
+            { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои!", b: 'home_bg', c: 'gosha_troll' },
+            
+            /* НОВЫЕ СЦЕНЫ НАЧИНАЮТСЯ ЗДЕСЬ */
+            { n: "Саня", t: "Спасибо, пацаны. Вы лучшие. Но мне пора собирать вещи. Я беру билеты в Оренбург — поеду к Артуру и Соне.", b: 'home_bg', c: 'none' },
+            { n: "Гоша", t: "Давай, машинист! Удачи тебе там! И помни — кто не рискует, тот не ест наггетсы!", b: 'home_bg', c: 'gosha_troll' },
+            { n: "Дима", t: "На связи, брат. Если что — мы всегда рядом. Счастливого пути!", b: 'home_bg', c: 'dima_home' },
+            { n: "Рассказчик", t: "Саня попрощался с друзьями и сел в самолет до Оренбурга.", b: 'airport', c: 'airport' },
+            { n: "Артур", t: "Салам, Саня! Бауырым, рад видеть! Заходи, располагайся, чувствуй себя как дома.", b: 'artur_sonya', c: 'none' },
+            { n: "Соня", t: "Саша, привет! Как добрался? Проходи на кухню, я уже чайник поставила.", b: 'artur_sonya', c: 'none' },
+            { n: "Соня", t: "Сань... я же с Катей общаюсь. И вижу, как ты на неё смотришь. Знаешь, мы с Артуром завтра в Казахстан уезжаем на неделю. Квартира свободна.", b: 'sonya_alone', c: 'none' },
+            { n: "Соня", t: "Позови её к себе. Как раз Пасха на носу. Скажи, что яйца красить не умеешь — она точно придёт помочь. Действуй!", b: 'sonya_alone', c: 'none' },
+            { n: "Артур", t: "Салам, Саня! Слушай сюда. Жизнь — она как железная дорога. Не сворачивай с рельс своего сердца.", b: 'artur_alone', c: 'none' },
+            { n: "Артур", t: "Ты же не мамбетка какая-то, будь мужиком! Всё будет чётко, давай, брат!", b: 'artur_alone', c: 'none' },
+            { n: "Саня", t: "Я так и сделал. Написал Кате, и она согласилась! Но появилась проблема... Я в панике написал Артуру: 'Брат, как вообще варить яйца, чтобы они не взорвались?!'", b: 'easter_eggs', c: 'none' },
+            { n: "Артур", t: "Ахаха, Саня, ну ты даёшь! Машинист тяжелых составов боится куриного яйца! Кидай в воду и таймер ставь. Не позорь меня перед дамой!", b: 'artur_alone', c: 'none' },
+            { n: "Рассказчик", t: "Сане стало жутко неловко от подколов Артура. Но пришла Катя. Они вместе смеялись, красили яйца, а потом он угостил её куличом.", b: 'easter_eggs', c: 'none' },
+            { n: "Рассказчик", t: "Они включили 'Хоббита', укрылись пледом и мило лежали вместе. Воздух искрился от напряжения, но до поцелуя так и не дошло.", b: 'easter_eggs', c: 'none' },
+            { n: "Рассказчик", t: "Прошло пару дней. Саня пришел к Кате в салон. Жужжание машинки, запах антисептика... Катя била ему татуировку и была предельно сосредоточена.", b: 'tattoo_work', c: 'none' },
+            { n: "Катя", t: "Саш... мне нужно тебе кое-что сказать. Я рассталась с ним. Совсем.", b: 'tattoo_work', c: 'none' },
+            { n: "Катя", t: "И я поняла... я люблю тебя. Давно люблю. ♥♥♥", b: 'katya_love', c: 'none', isHeart: true },
+            { n: "Рассказчик", t: "Саша замер. Он не верил своим ушам. Для него это был лучший день в жизни, он совершенно такого не ожидал! Оказывается, он ей тоже безумно давно нравился.", b: 'katya_love', c: 'none', isHeart: true },
+            { n: "Рассказчик", t: "Она осторожно откладывает машинку и берет его за щеку теплой ладонью. Их взгляды встречаются...", b: 'the_kiss', c: 'none' },
+            { n: "Рассказчик", t: "Первый поцелуй. Долгий, нежный и невероятно искренний. Чувства, которые копились годами, наконец-то вырвались на свободу, сметая все преграды, и мир вокруг просто перестал существовать.", b: 'the_kiss', c: 'none' },
+            { n: "Рассказчик", t: "Весь следующий день они провели вместе. Гуляли по городу, смеялись и катались на аттракционах.", b: 'final_park', c: 'none' },
+            { n: "Рассказчик", t: "Они и подумать не могли, что всё сложится именно так сказочно. Долгая дорога из Орска привела его к самому главному. Теперь они оба невероятно счастливы. Конец.", b: 'final_park', c: 'none' }
         ],
 
-        /* ИНИЦИАЛИЗАЦИЯ */
         async init() {
-            const saved = localStorage.getItem('sanya_quest_idx');
-            if (saved) this.idx = Math.min(parseInt(saved), this.story.length - 1);
-            
+            const savedIdx = localStorage.getItem('sanya_quest_idx');
+            if (savedIdx !== null) this.idx = Math.min(parseInt(savedIdx), this.story.length - 1);
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                musicGain = audioCtx.createGain(); 
-                musicGain.connect(audioCtx.destination);
+                musicGain = audioCtx.createGain(); musicGain.connect(audioCtx.destination);
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
-                this.startMusicLoop();
-            } catch(e) { console.warn("Audio blocked"); }
-            
+                this.startMusic();
+            } catch(e) {}
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
             this.update();
         },
 
-        /* ЗВУКОВОЙ ДВИЖОК */
-        playClickSound() {
+        confirmReset() { if (confirm("Весь прогресс будет удален. Вы уверены?")) this.resetSave(); },
+        resetSave() { localStorage.removeItem('sanya_quest_idx'); location.reload(); },
+        restartLevel() { document.getElementById('fail-screen').style.display = 'none'; this.update(); },
+
+        playClick() {
             if (!audioCtx || this.isMuted) return;
-            const osc = audioCtx.createOscillator(); 
-            const g = audioCtx.createGain();
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+            const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(280, audioCtx.currentTime);
             g.gain.setValueAtTime(0.04, audioCtx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
-            osc.connect(g); 
-            g.connect(audioCtx.destination);
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.04);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
         },
 
-        startMusicLoop() {
+        startMusic() {
+            if (this.musicStarted) return; this.musicStarted = true;
             setInterval(() => {
                 if (this.isMuted || !audioCtx) return;
-                const notes = [196, 220, 246, 261];
-                const f = notes[Math.floor(Date.now()/1200)%4];
-                const osc = audioCtx.createOscillator(); 
-                const g = audioCtx.createGain();
-                osc.type = 'triangle'; 
-                osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
+                const f = [196, 220, 246, 261][Math.floor(Date.now()/1200)%4];
+                const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
                 g.gain.setValueAtTime(0, audioCtx.currentTime);
-                g.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 0.1);
+                g.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.1);
                 g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
-                osc.connect(g); 
-                g.connect(musicGain); 
-                osc.start(); 
-                osc.stop(audioCtx.currentTime + 2.5);
+                osc.connect(g); g.connect(musicGain); osc.start(); osc.stop(audioCtx.currentTime + 2.5);
             }, 1250);
         },
 
         toggleMusic(e) {
-            e.stopPropagation(); 
+            if (e) e.stopPropagation();
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             this.isMuted = !this.isMuted;
             document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
         },
 
-        /* УПРАВЛЕНИЕ СЦЕНАМИ */
-        update() {
-            localStorage.setItem('sanya_quest_idx', this.idx);
-            const s = this.story[this.idx];
-            
-            const sceneEl = document.getElementById('scene');
-            sceneEl.style.backgroundImage = `url('${this.imgs[s.b]}')`;
-            
-            const heroEl = document.getElementById('hero');
-            if (s.c) { 
-                heroEl.src = this.imgs[s.c]; 
-                heroEl.style.display = 'block'; 
-                sceneEl.classList.add('focus-mode'); 
-            } else { 
-                heroEl.style.display = 'none'; 
-                sceneEl.classList.remove('focus-mode'); 
-            }
-            
-            document.getElementById('name').innerText = s.n;
-            document.getElementById('name').style.color = this.colors[s.n] || "#fff";
-            
-            if (s.hasGame) { 
-                this.gameActive = true; 
-                this.score = 40; 
-                document.getElementById('overlay').style.display = 'flex'; 
-                document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
-                this.startMinigameLogic(); 
-            } else { 
-                this.gameActive = false; 
-                document.getElementById('overlay').style.display = 'none'; 
-            }
-
-            this.typeWriterEffect(s.t, s.shakeOnType, s.isHeart);
-        },
-
-        typeWriterEffect(text, shake, heart) {
-            this.isTyping = true; 
+        typeText(element, text, shake, heart) {
+            let i = 0; element.innerHTML = ""; this.isTyping = true;
             this.currentFullText = text; 
             this.currentShake = shake; 
             this.currentHeart = heart;
-            
-            let charIndex = 0; 
-            const textEl = document.getElementById('text'); 
-            textEl.innerHTML = "";
-            textEl.className = shake ? "shake-text" : (heart ? "heart-text" : "");
+            element.className = shake ? "shake-text" : (heart ? "heart-text" : "");
             
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('prev-btn').style.display = 'none';
-            
-            if (this.tTimer) clearInterval(this.tTimer);
-            
-            this.tTimer = setInterval(() => {
-                if (charIndex < text.length) { 
-                    textEl.innerHTML += text[charIndex++]; 
-                    this.playClickSound(); 
+            if (this.textTimer) clearInterval(this.textTimer);
+            this.textTimer = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (text.charAt(i) !== " ") this.playClick();
+                    i++;
                 } else { 
-                    clearInterval(this.tTimer); 
-                    this.isTyping = false; 
-                    this.showNavigation();
+                    this.finishTyping();
                 }
             }, 30);
         },
 
-        showNavigation() {
-            document.getElementById('next-btn').style.display = 'block'; 
-            if(this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
+        finishTyping() {
+            clearInterval(this.textTimer);
+            this.isTyping = false;
+            document.getElementById('text').innerHTML = this.currentFullText;
+            document.getElementById('text').className = this.currentShake ? "shake-text" : (this.currentHeart ? "heart-text" : "");
+            this.showPostTypingUI();
         },
 
-        handleUiClick() { 
-            if (this.isTyping) { 
-                clearInterval(this.tTimer); 
-                this.isTyping = false; 
-                document.getElementById('text').innerHTML = this.currentFullText; 
-                this.showNavigation();
-            } else if (!this.gameActive) {
-                this.next(); 
+        handleUiClick() {
+            if (this.isTyping) {
+                this.finishTyping();
+            } else if (!this.gameActive && document.getElementById('choice-container').style.display !== 'flex') {
+                this.next();
             }
         },
+
+        showPostTypingUI() {
+            const s = this.story[this.idx];
+            if (this.tempText) {
+                document.getElementById('next-btn').style.display = 'block';
+            } else if (s.choices && !this.gameActive) {
+                this.showChoices(s.choices);
+            } else if (!this.gameActive) {
+                document.getElementById('next-btn').style.display = 'block';
+                if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
+            }
+        },
+
+        showChoices(choices) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = "";
+            choices.forEach(c => {
+                const b = document.createElement('button');
+                b.className = 'choice-btn'; b.innerText = c;
+                b.onclick = (e) => { e.stopPropagation(); this.makeChoice(c); };
+                container.appendChild(b);
+            });
+            container.style.display = 'flex';
+        },
+
+        makeChoice(choice) {
+            document.getElementById('choice-container').style.display = 'none';
+            if (choice === "Написать ей?") {
+                this.tempText = "Я достал телефон и быстро набрал: 'Привет, я подлетаю к Москве...'. Галочка 'Доставлено' появилась сразу, но ответ так и не пришел. В груди неприятно кольнуло.";
+            } else if (choice === "Отшутиться") {
+                this.tempText = "Я попытался улыбнуться: 'Да ладно вам, пацаны, я просто в депо переутомился!'. Но Диман только прищурился, а Гоша перестал жевать. Скрывать правду дальше было бессмысленно.";
+            } else {
+                this.next(); return;
+            }
+            this.typeText(document.getElementById('text'), this.tempText);
+        },
+
+        async update() {
+            const fade = document.getElementById('fade-layer');
+            fade.classList.add('fade-active');
+            await new Promise(r => setTimeout(r, 500));
+
+            localStorage.setItem('sanya_quest_idx', this.idx);
+            const s = this.story[this.idx];
+            const scene = document.getElementById('scene');
+            const hero = document.getElementById('hero');
+            const ui = document.getElementById('ui');
+            const nameEl = document.getElementById('name');
+
+            this.tempText = null; 
+            document.getElementById('choice-container').style.display = 'none';
+            hero.className = ''; scene.className = ''; hero.style.opacity = '';
+            
+            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+            nameEl.style.color = this.colors[s.n] || "#fff";
+            ui.style.borderColor = this.colors[s.n] || "#fc0";
+            nameEl.innerText = s.n;
+
+            if (s.c && s.c !== 'none') {
+                scene.classList.add('focus-mode'); hero.src = this.imgs[s.c];
+                hero.style.display = 'block'; hero.classList.add('hero-enter');
+                setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 800);
+            } else {
+                scene.classList.remove('focus-mode'); hero.style.opacity = '0';
+                setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
+            }
+            
+            const overlay = document.getElementById('overlay');
+            if (s.hasGame) {
+                this.gameActive = true; this.score = 40;
+                this.gameStartTime = Date.now();
+                document.getElementById('fill').style.width = '40%';
+                overlay.style.display = 'flex';
+                document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
+                this.startDrain(s.hasGame);
+            } else {
+                this.gameActive = false; overlay.style.display = 'none'; this.stopDrain();
+            }
+
+            fade.classList.remove('fade-active');
+            this.typeText(document.getElementById('text'), s.t, s.shakeOnType, s.isHeart);
+        },
+
+        startDrain(type) {
+            this.stopDrain();
+            this.drainInterval = setInterval(() => {
+                if (this.gameActive) {
+                    this.score -= (type === "train") ? 2.2 : 2.0; 
+                    if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 3000)) {
+                        this.stopDrain(); this.gameActive = false;
+                        document.getElementById('fail-screen').style.display = 'flex';
+                    }
+                    document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
+                }
+            }, 100);
+        },
+
+        stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
 
         next() { 
-            if (this.idx < this.story.length - 1) { 
-                this.idx++; 
-                this.update(); 
+            if (this.isTyping || this.gameActive || document.getElementById('choice-container').style.display === 'flex') return;
+            if (this.tempText) {
+                this.tempText = null;
+                if (this.idx < this.story.length - 1) { this.idx++; this.update(); }
             } else {
-                document.getElementById('end-screen').style.display = 'flex'; 
+                if (this.idx < this.story.length - 1) { this.idx++; this.update(); } 
+                else { document.getElementById('end-screen').style.display = 'flex'; }
             }
         },
+        
+        prev() { if (!this.isTyping && !this.tempText && this.idx > 0) { this.idx--; this.update(); } },
 
-        prev() { 
-            if (this.idx > 0) { 
-                this.idx--; 
-                this.update(); 
-            } 
-        },
-
-        /* МИНИ-ИГРЫ */
-        startMinigameLogic() { 
-            if (this.dTimer) clearInterval(this.dTimer);
-            this.dTimer = setInterval(() => { 
-                if (!this.gameActive) { clearInterval(this.dTimer); return; } 
-                this.score -= 2.2; 
-                if (this.score <= 0) { 
-                    document.getElementById('fail-screen').style.display = 'flex'; 
-                    this.gameActive = false; 
-                } 
-                document.getElementById('fill').style.width = this.score + "%"; 
-            }, 100); 
-        },
-
-        tap(e) { 
-            e.preventDefault(); 
-            if (this.gameActive) { 
-                this.score += 9; 
-                if (this.score >= 100) { 
-                    this.gameActive = false; 
-                    this.score = 100; 
-                    setTimeout(() => this.next(), 200); 
-                } 
-                document.getElementById('fill').style.width = this.score + "%"; 
-            } 
-        },
-
-        /* СИСТЕМНЫЕ ФУНКЦИИ */
-        confirmReset() { 
-            if (confirm("Весь прогресс будет стерт. Ты уверен?")) {
-                this.resetSave(); 
+        tap(e) {
+            e.preventDefault();
+            if (!this.gameActive) return;
+            const type = this.story[this.idx].hasGame;
+            this.score += (type === "train") ? 7.5 : 12;
+            if (type === "nuggets" && this.score >= 65) {
+                this.stopDrain(); this.gameActive = false;
+                const container = document.getElementById('game-container');
+                document.getElementById('overlay').classList.add('fail-ui');
+                container.classList.add('long-shake', 'red-alert');
+                setTimeout(() => {
+                    container.classList.remove('long-shake', 'red-alert');
+                    document.getElementById('overlay').classList.remove('fail-ui');
+                    this.idx++; this.update();
+                }, 1200);
+                return;
             }
-        },
-
-        resetSave() { 
-            localStorage.removeItem('sanya_quest_idx'); 
-            location.reload(); 
-        },
-
-        restartLevel() { 
-            document.getElementById('fail-screen').style.display = 'none'; 
-            this.update(); 
+            if (this.score >= 100) {
+                this.score = 100; document.getElementById('fill').style.width = '100%';
+                this.stopDrain(); this.gameActive = false;
+                setTimeout(() => { this.idx++; this.update(); }, 200);
+            } else {
+                document.getElementById('fill').style.width = this.score + '%';
+            }
         }
     };
 </script>
