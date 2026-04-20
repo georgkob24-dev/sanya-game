@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 7.0 - Hardcore Edition</title>
+    <title>Sanya Quest V 7.1 - Master Edition</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
         
-        /* Индикатор версии */
         #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
 
-        /* Экраны */
         #start-screen, #end-screen, #fail-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
         #fail-screen { display: none; background: #900; z-index: 2500; }
 
-        .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
+        .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
+        .reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 13px; border-radius: 5px; cursor: pointer; transition: color 0.3s; }
+        .reset-btn:hover { color: #f44; border-color: #f44; }
 
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: background 0.6s, filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
@@ -43,18 +43,19 @@
         .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
         @keyframes hero-breathing { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, -10px) scale(1.02); } }
         .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-15px, 0); } 20%, 40%, 60%, 80% { transform: translate(15px, 0); } }
+        @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-15px, 0); } 20%, 40% , 60%, 80% { transform: translate(15px, 0); } }
         .red-alert { filter: sepia(1) saturate(15) hue-rotate(-50deg) !important; }
         .fail-ui #fill { background: #f00 !important; box-shadow: 0 0 30px #f00; }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="version-tag">V 7.0</div>
+    <div id="version-tag">V 7.1</div>
 
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
         <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
+        <button class="reset-btn" onclick="game.confirmReset()">СБРОСИТЬ ПРОГРЕСС</button>
     </div>
 
     <div id="fail-screen">
@@ -145,6 +146,12 @@
             this.update();
         },
 
+        confirmReset() {
+            if (confirm("Весь прогресс будет удален. Вы уверены?")) {
+                this.resetSave();
+            }
+        },
+
         resetSave() { localStorage.removeItem('sanya_quest_idx'); location.reload(); },
         restartLevel() { document.getElementById('fail-screen').style.display = 'none'; this.update(); },
 
@@ -226,7 +233,7 @@
             
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
-                this.gameActive = true; this.score = 30; // Начинаем с 30%
+                this.gameActive = true; this.score = 30; 
                 this.gameStartTime = Date.now();
                 document.getElementById('fill').style.width = '30%';
                 overlay.style.display = 'flex';
@@ -242,16 +249,12 @@
             this.stopDrain();
             this.drainInterval = setInterval(() => {
                 if (this.gameActive) {
-                    // ХАРДКОР: В поезде падает быстрее
                     this.score -= (type === "train") ? 3.5 : 2.0; 
-                    
-                    // Условие поражения для ПОЕЗДА
                     if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 2000)) {
                         this.stopDrain();
                         this.gameActive = false;
                         document.getElementById('fail-screen').style.display = 'flex';
                     }
-
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
                 }
             }, 100);
@@ -271,7 +274,6 @@
             e.preventDefault();
             if (!this.gameActive) return;
             const type = this.story[this.idx].hasGame;
-            // ХАРДКОР: В поезде клик дает меньше (6 вместо 12)
             this.score += (type === "train") ? 5.5 : 12;
 
             if (type === "nuggets" && this.score >= 65) {
