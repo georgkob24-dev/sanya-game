@@ -3,77 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 5.6 - Bugfix & Stability</title>
+    <title>Sanya Quest V 5.8 - Gosha Trap</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
-        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
+        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
         
         #start-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
-        #reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 12px; border-radius: 5px; cursor: pointer; }
+        #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
 
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.6s, filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
         
-        #hero { 
-            position: absolute; 
-            bottom: 0; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            height: 95%; 
-            z-index: 5; 
-            display: none; 
-            pointer-events: none; 
-            transition: opacity 0.5s ease; 
-            filter: drop-shadow(0 0 25px rgba(0,0,0,0.9));
-            transform-origin: bottom center; 
-            will-change: transform;
-        }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s; filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); }
         
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; transition: background 0.2s; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; box-shadow: 0 0 15px #fc0; }
         
+        /* Эффекты проигрыша/ярости */
+        .fail-ui #fill { background: #f00 !important; box-shadow: 0 0 40px #f00 !important; transition: width 0.5s ease-in !important; }
+        .red-alert { filter: sepia(1) saturate(10) hue-rotate(-50deg) !important; }
+        
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; transition: border-color 0.4s; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
-        
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
         #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
-
-        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.4s; }
+        
+        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
         #text { font-size: 17px; line-height: 1.4; color: #eee; }
         
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
-        #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
 
-        /* АНИМАЦИИ */
-        .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
-        @keyframes hero-enter-anim {
-            from { opacity: 0; transform: translate(-50%, 40px) scale(0.95); }
-            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
-        }
-        .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
-        @keyframes hero-breathing {
-            0%, 100% { transform: translate(-50%, 0) scale(1); }
-            50% { transform: translate(-50%, -12px) scale(1.04, 1.02); }
-        }
-        .shake-quick { animation: shake-quick-anim 0.4s both; }
-        @keyframes shake-quick-anim {
-            0%, 100% { transform: translate(0,0); }
-            25% { transform: translate(-6px, 0); }
-            75% { transform: translate(6px, 0); }
+        .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-anim {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); }
+            20%, 40%, 60%, 80% { transform: translate(10px, 0); }
         }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="v">V 5.6 - STABLE FIX</div>
-    
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
         <button id="start-btn" onclick="game.init()">ИГРАТЬ</button>
-        <button id="reset-btn" onclick="game.resetSave()">Сбросить прогресс</button>
     </div>
+
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
@@ -95,9 +70,10 @@
 <script>
     let audioCtx = null;
     let musicGain = null;
+
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, 
-        drainInterval: null, gameActive: false, // Флаг активности игры
+        drainInterval: null, gameActive: false,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -111,40 +87,27 @@
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
         },
-        colors: {
-            "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888"
-        },
+        colors: { "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888" },
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
-            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
-            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути...", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив...", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это смерть. Оно требует перемен. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди встреча, которая либо подарит жизнь, либо добьет.", b: 'thoughts', c: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
-            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
-            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
-            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
+            { n: "Саня", t: "Доброе утро, я проснулся...", b: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! Лечу в Москву!", b: 'airport' },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна...", b: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал!", b: 'bar_bg', c: 'dima' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой?", b: 'bar_bg', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню.", b: 'home_bg' },
+            { n: "Дима", t: "Сань, не держи в себе. Мы с тобой, бро.", b: 'home_bg', c: 'dima_home' },
+            { n: "Гоша", t: "О, доставка как раз вовремя! Наггетсы мои!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку!", b: 'home_bg', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
-            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
+            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. Продолжение следует...", b: 'home_bg' }
         ],
 
         async init() {
-            const savedIdx = localStorage.getItem('sanya_quest_idx');
-            if (savedIdx !== null) this.idx = parseInt(savedIdx);
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 musicGain = audioCtx.createGain();
                 musicGain.connect(audioCtx.destination);
-                musicGain.gain.value = 1.0; 
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 this.startMusic();
             } catch(e) {}
@@ -153,35 +116,33 @@
             this.update();
         },
 
-        resetSave() {
-            localStorage.removeItem('sanya_quest_idx');
-            alert("Прогресс сброшен.");
-            location.reload();
+        playClick() {
+            if (!audioCtx || this.isMuted) return;
+            const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.04);
         },
 
         startMusic() {
-            if (this.musicStarted || !audioCtx) return;
-            this.musicStarted = true;
+            if (this.musicStarted) return; this.musicStarted = true;
             setInterval(() => {
-                if (this.isMuted || audioCtx.state === 'suspended') return;
-                try {
-                    const f = [196, 220, 246, 261][Math.floor(Date.now()/1200)%4];
-                    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
-                    g.gain.setValueAtTime(0, audioCtx.currentTime);
-                    g.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.1);
-                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
-                    osc.connect(g); g.connect(musicGain); osc.start(); osc.stop(audioCtx.currentTime + 2.5);
-                } catch(e) {}
+                if (this.isMuted || !audioCtx) return;
+                const f = [196, 220, 246, 261][Math.floor(Date.now()/1200)%4];
+                const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
+                g.gain.setValueAtTime(0, audioCtx.currentTime);
+                g.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.1);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+                osc.connect(g); g.connect(musicGain); osc.start(); osc.stop(audioCtx.currentTime + 2.5);
             }, 1250);
         },
 
-        toggleMusic(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        toggleMusic() {
             this.isMuted = !this.isMuted;
             document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
-            if (!this.musicStarted) this.startMusic();
         },
 
         typeText(element, text) {
@@ -192,66 +153,51 @@
             this.textTimer = setInterval(() => {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
+                    if (text.charAt(i) !== " ") this.playClick();
                     i++;
                 } else { 
                     clearInterval(this.textTimer); this.isTyping = false;
-                    this.showNav();
+                    if (!this.gameActive) {
+                        document.getElementById('next-btn').style.display = 'block';
+                        if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
+                    }
                 }
             }, 30);
         },
 
-        showNav() {
-            if (!this.gameActive) {
-                document.getElementById('next-btn').style.display = 'block';
-                if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
-            }
-        },
-        
         update() {
-            localStorage.setItem('sanya_quest_idx', this.idx);
             const s = this.story[this.idx];
             const scene = document.getElementById('scene');
             const hero = document.getElementById('hero');
             const ui = document.getElementById('ui');
             const nameEl = document.getElementById('name');
-
-            hero.className = ''; 
-            scene.classList.remove('shake-quick');
-            hero.style.opacity = '';
-
+            
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             const charColor = this.colors[s.n] || "#fff";
             nameEl.style.color = charColor;
             ui.style.borderColor = charColor;
-            
+            nameEl.innerText = s.n;
+
             if (s.c && s.c !== 'none') {
                 scene.classList.add('focus-mode');
-                if(hero.src !== this.imgs[s.c]) hero.src = this.imgs[s.c];
+                hero.src = this.imgs[s.c];
                 hero.style.display = 'block';
-                hero.classList.add('hero-enter');
-                setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 800);
+                hero.style.opacity = '1';
             } else {
                 scene.classList.remove('focus-mode');
                 hero.style.opacity = '0';
                 setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
             }
-            
-            if (s.effect === 'shake-quick') scene.classList.add('shake-quick');
-            nameEl.innerText = s.n;
-            
+
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
-                this.gameActive = true; // Устанавливаем флаг игры
-                this.score = 0;
+                this.gameActive = true; this.score = 0;
                 document.getElementById('fill').style.width = '0%';
                 overlay.style.display = 'flex';
-                overlay.classList.remove('fail-state');
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 this.startDrain(s.hasGame);
             } else {
-                this.gameActive = false;
-                overlay.style.display = 'none';
-                this.stopDrain();
+                this.gameActive = false; overlay.style.display = 'none'; this.stopDrain();
             }
             this.typeText(document.getElementById('text'), s.t);
         },
@@ -260,7 +206,7 @@
             this.stopDrain();
             this.drainInterval = setInterval(() => {
                 if (this.score > 0) {
-                    this.score -= (type === "train") ? 2.5 : (1.9 + (this.score / 20));
+                    this.score -= (type === "train") ? 2.2 : 1.8;
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
                 }
             }, 100);
@@ -268,48 +214,40 @@
 
         stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
 
-        next() {
-            if (this.isTyping || this.gameActive) return;
-            this.idx = (this.idx + 1) % this.story.length;
-            this.update();
-        },
-
-        prev() {
-            if (this.isTyping) { clearInterval(this.textTimer); this.isTyping = false; }
-            if (this.idx > 0) { this.idx--; this.update(); }
-        },
+        next() { if (!this.isTyping && !this.gameActive) { this.idx++; this.update(); } },
+        prev() { if (!this.isTyping && this.idx > 0) { this.idx--; this.update(); } },
 
         tap(e) {
-            e.preventDefault(); e.stopPropagation();
             if (!this.gameActive) return;
             const type = this.story[this.idx].hasGame;
-            this.score += (type === "train") ? 9 : 11;
-            
-            // Логика для Гоши (Наггетсы)
-            if (type === "nuggets" && this.score >= 90) {
-                this.stopDrain();
-                this.gameActive = false; // Отключаем игру
+            this.score += (type === "train") ? 9 : 12;
+
+            // СКРИПТ ГОШИ: ПРОВАЛ НА 65%
+            if (type === "nuggets" && this.score >= 65) {
+                this.stopDrain(); this.gameActive = false;
                 const overlay = document.getElementById('overlay');
                 const container = document.getElementById('game-container');
-                overlay.classList.add('fail-state');
+                
+                // Визуальный хаос
+                overlay.classList.add('fail-ui');
                 container.classList.add('long-shake', 'red-alert');
-                this.score = 0;
+                this.score = 0; 
                 document.getElementById('fill').style.width = '0%';
+
                 setTimeout(() => {
                     container.classList.remove('long-shake', 'red-alert');
-                    overlay.classList.remove('fail-state');
-                    this.next(); // Переход дальше
-                }, 1800);
+                    overlay.classList.remove('fail-ui');
+                    this.idx++; // Прыжок к реплике Гоши про глотание слюнок
+                    this.update();
+                }, 1000);
                 return;
             }
 
-            // Логика для Поезда (Победа)
             if (this.score >= 100) {
                 this.score = 100;
                 document.getElementById('fill').style.width = '100%';
-                this.stopDrain();
-                this.gameActive = false;
-                setTimeout(() => this.next(), 200);
+                this.stopDrain(); this.gameActive = false;
+                setTimeout(() => { this.idx++; this.update(); }, 200);
             } else {
                 document.getElementById('fill').style.width = this.score + '%';
             }
