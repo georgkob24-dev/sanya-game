@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 4.5 - Animations Update</title>
+    <title>Sanya Quest V 4.6 - Bugfix Update</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
@@ -38,7 +38,7 @@
         #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
         
-        /* --- НОВЫЕ АНИМАЦИИ --- */
+        /* --- АНИМАЦИИ --- */
         .hero-enter { animation: hero-enter-anim 0.5s ease-out forwards; }
         @keyframes hero-enter-anim {
             from { opacity: 0; transform: translate(-50%, 20px); }
@@ -57,12 +57,12 @@
             25%, 75% { transform: translate(-3px, 0); }
             50% { transform: translate(3px, 0); }
         }
-        /* --- КОНЕЦ НОВЫХ АНИМАЦИЙ --- */
+        /* --- КОНЕЦ АНИМАЦИЙ --- */
 
     </style>
 </head>
 <body>
-    <div id="v">V 4.5 - ANIMATIONS UPDATE</div>
+    <div id="v">V 4.6 - BUGFIX UPDATE</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -123,7 +123,6 @@
             { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
             { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
-            // СТРОКА ИЗМЕНЕНА: Добавлен эффект тряски
             { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
             { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
@@ -197,7 +196,7 @@
             }, 30);
         },
         
-        // ФУНКЦИЯ ИЗМЕНЕНА: Добавлено управление CSS-классами для анимаций
+        // ФУНКЦИЯ ИЗМЕНЕНА: Исправлена логика появления персонажей
         update() {
             const s = this.story[this.idx];
             const scene = document.getElementById('scene');
@@ -206,9 +205,9 @@
             const nameEl = document.getElementById('name');
             const nextBtn = document.getElementById('next-btn');
 
-            // Очищаем классы анимаций с прошлого шага
             hero.className = ''; 
             scene.classList.remove('shake-quick');
+            hero.style.opacity = ''; // <-- ЭТА СТРОКА ВСЁ ИСПРАВЛЯЕТ
 
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             
@@ -219,23 +218,21 @@
             
             if (s.c && s.c !== 'none') {
                 scene.classList.add('focus-mode');
-                hero.src = this.imgs[s.c];
+                if(hero.src !== this.imgs[s.c]) {
+                   hero.src = this.imgs[s.c];
+                }
                 hero.style.display = 'block';
-
-                // Добавляем классы для анимации появления и дыхания
                 hero.classList.add('hero-enter', 'hero-idle');
 
             } else {
                 scene.classList.remove('focus-mode');
-                hero.style.opacity = '0'; // Для плавного исчезновения
-                // Убираем класс дыхания, когда персонажа нет
+                hero.style.opacity = '0';
                 hero.classList.remove('hero-idle'); 
                 setTimeout(() => { 
                     if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; 
                 }, 300);
             }
             
-            // Проверяем, есть ли у сцены специальный эффект
             if (s.effect && s.effect === 'shake-quick') {
                 scene.classList.add('shake-quick');
             }
