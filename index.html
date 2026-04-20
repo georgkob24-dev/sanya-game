@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 5.1 - Realistic Breathing</title>
+    <title>Sanya Quest V 5.2 - Visible Breathing</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
@@ -24,10 +24,10 @@
             z-index: 5; 
             display: none; 
             pointer-events: none; 
-            transition: opacity 0.3s; 
-            filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
-            /* Точка опоры внизу по центру, чтобы ноги не двигались при вдохе */
+            transition: opacity 0.4s ease; 
+            filter: drop-shadow(0 0 25px rgba(0,0,0,0.9));
             transform-origin: bottom center; 
+            will-change: transform; /* Оптимизация для плавной анимации */
         }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
@@ -48,20 +48,26 @@
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
 
-        /* --- ОБНОВЛЕННЫЕ АНИМАЦИИ --- */
+        /* --- УСИЛЕННЫЕ АНИМАЦИИ --- */
         
-        /* Появление персонажа */
-        .hero-enter { animation: hero-enter-anim 0.6s ease-out forwards; }
+        /* Появление: теперь с легким "подскоком" */
+        .hero-enter { animation: hero-enter-anim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes hero-enter-anim {
-            from { opacity: 0; transform: translate(-50%, 30px) scale(0.95); }
+            from { opacity: 0; transform: translate(-50%, 40px) scale(0.9); }
             to { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Реалистичное дыхание: небольшое увеличение масштаба и подъем */
-        .hero-idle { animation: hero-breathing 4.5s ease-in-out infinite; }
+        /* Усиленное дыхание */
+        .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
         @keyframes hero-breathing {
-            0%, 100% { transform: translate(-50%, 0) scale(1); }
-            50% { transform: translate(-50%, -5px) scale(1.02, 1.01); } /* Чуть выше и шире на вдохе */
+            0%, 100% { 
+                transform: translate(-50%, 0) scale(1); 
+                filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+            }
+            50% { 
+                transform: translate(-50%, -12px) scale(1.04, 1.02); /* Выше и объемнее */
+                filter: drop-shadow(0 0 35px rgba(0,0,0,0.6)); /* Тень меняется вместе с движением */
+            }
         }
 
         .shake-quick { animation: shake-quick-anim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
@@ -74,7 +80,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 5.1 - BREATHING UPDATE</div>
+    <div id="v">V 5.2 - ENHANCED BREATHING</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -254,7 +260,9 @@
                 scene.classList.add('focus-mode');
                 if(hero.src !== this.imgs[s.c]) hero.src = this.imgs[s.c];
                 hero.style.display = 'block';
-                hero.classList.add('hero-enter', 'hero-idle');
+                // Сначала добавляем вход, потом через микро-паузу idle, чтобы анимации не конфликтовали
+                hero.classList.add('hero-enter');
+                setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 700);
             } else {
                 scene.classList.remove('focus-mode');
                 hero.style.opacity = '0';
