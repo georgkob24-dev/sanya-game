@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 6.0 - Final Menu</title>
+    <title>Sanya Quest V 6.1 - FULL TEXT RESTORED</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
         
-        /* Экраны */
         #start-screen, #end-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
+        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
 
         .main-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); transition: transform 0.2s; }
         .main-btn:active { transform: scale(0.95); }
@@ -25,11 +24,12 @@
         }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
-        #bar-container { width: 75%; height: 30px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; }
+        #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
         
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
-        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; }
+        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
+        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; }
         #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; }
 
         #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
@@ -44,20 +44,23 @@
         @keyframes hero-breathing { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, -10px) scale(1.02); } }
         .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-15px, 0); } 20%, 40%, 60%, 80% { transform: translate(15px, 0); } }
+        .shake-quick { animation: shake-quick-anim 0.4s both; }
+        @keyframes shake-quick-anim { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-8px, 0); } 75% { transform: translate(8px, 0); } }
         .red-alert { filter: sepia(1) saturate(15) hue-rotate(-50deg) !important; }
         .fail-ui #fill { background: #f00 !important; box-shadow: 0 0 30px #f00; }
+        @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
         <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
-        <p style="color: #666; margin-top: 20px; font-size: 12px;">Прогресс сохраняется автоматически</p>
+        <p style="color: #666; margin-top: 20px; font-size: 12px;">Прогресс сохранен</p>
     </div>
 
     <div id="end-screen">
         <h2 style="color:#fc0; font-size: 32px;">КОНЕЦ ГЛАВЫ</h2>
-        <p style="font-size: 18px; margin-bottom: 40px; padding: 0 20px;">Вы прошли текущую историю Сани. <br>Следите за обновлениями!</p>
+        <p style="font-size: 18px; margin-bottom: 40px; padding: 0 20px;">Вы прошли текущую историю Сани.</p>
         <button class="main-btn" onclick="game.resetSave()">В НАЧАЛО</button>
     </div>
 
@@ -69,6 +72,7 @@
         <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
             <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
+            <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
         <div id="ui">
             <div id="name">САНЯ</div>
@@ -99,19 +103,26 @@
         },
         colors: { "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888" },
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: "train" },
-            { n: "Саня", t: "Фух, наконец-то отпуск! Лечу в Москву!", b: 'airport', c: 'airport' },
-            { n: "Саня", t: "В самолёте не могу сомкнуть глаз. Все мысли только о Кате...", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к ней — это яростный шторм...", b: 'thoughts', c: 'thoughts' },
-            { n: "Рассказчик", t: "У неё есть парень. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts', c: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой?", b: 'bar_bg', c: 'gosha' },
-            { n: "Дима", t: "Сань, не держи в себе. Мы с тобой, бро. Твои проблемы — наши проблемы.", b: 'home_bg', c: 'dima_home' },
-            { n: "Гоша", t: "О, доставка приехала! Наггетсы мои, я их на одного брал!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку!", b: 'home_bg', hasGame: "nuggets" },
+            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
+            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это смерть. Оно требует перемен. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди встреча, которая либо подарит жизнь, либо добьет.", b: 'thoughts', c: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
+            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
+            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
-            { n: "Рассказчик", t: "Тяжесть на душе понемногу отпускает. С друзьями любая бездна кажется мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
+            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
 
         async init() {
@@ -194,7 +205,7 @@
             const nameEl = document.getElementById('name');
 
             hero.className = ''; 
-            scene.classList.remove('long-shake', 'red-alert');
+            scene.className = '';
             hero.style.opacity = '';
 
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
@@ -213,6 +224,8 @@
                 hero.style.opacity = '0';
                 setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
             }
+            
+            if (s.effect === 'shake-quick') scene.classList.add('shake-quick');
             
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
@@ -245,7 +258,6 @@
                 this.idx++; 
                 this.update(); 
             } else {
-                // ПОКАЗ ФИНАЛЬНОГО МЕНЮ
                 document.getElementById('end-screen').style.display = 'flex';
             }
         },
