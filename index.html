@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.6 - Deep Drama</title>
+    <title>Sanya Quest V 2.7</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 2.6 - DRAMA RESTORED</div>
+    <div id="v">V 2.7 - AUDIO & SCRIPT FIX</div>
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
@@ -43,7 +43,7 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicGain = audioCtx.createGain();
     musicGain.connect(audioCtx.destination);
-    musicGain.gain.value = 0.4;
+    musicGain.gain.value = 0.8; // Музыка стала значительно громче
 
     function playRetroClick() {
         if (game.isMuted) return;
@@ -51,8 +51,7 @@
         const g = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(280, audioCtx.currentTime);
-        // Исправлено "троение": резкое затухание в конце каждой буквы
-        g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.2, audioCtx.currentTime); // Скорректировано под новую громкость музыки
         g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
         osc.connect(g); g.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.04);
@@ -65,7 +64,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time);
         g.gain.setValueAtTime(0, time);
-        g.gain.linearRampToValueAtTime(0.25, time + 0.1);
+        g.gain.linearRampToValueAtTime(0.5, time + 0.1); // Пиковая громкость шага музыки
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc.connect(g); g.connect(musicGain);
         osc.start(time); osc.stop(time + dur);
@@ -87,17 +86,18 @@
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город.", b: 'morning' },
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: true },
             { n: "Саня", t: "Фух, наконец-то отпуск в РЖД! На билеты накопил. Лечу в Москву!", b: 'airport' },
-            // ВОССТАНОВЛЕННЫЙ БЛОК
             { n: "Саня", t: "Гул самолёта убаюкивает, но я не могу уснуть. Все мысли только о ней... о Кате.", b: 'thoughts' },
             { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм, который выжигает всё живое. Он любит её каждой клеткой, но эта любовь отравлена неизвестностью.", b: 'thoughts' },
             { n: "Рассказчик", t: "Взаимно ли это? Или он лишь тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар молота по наковальне сердца.", b: 'thoughts' },
             { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях.", b: 'thoughts' },
             { n: "Рассказчик", t: "Но боль становится невыносимой. Сердце кричит, что тишина — это медленная смерть. Оно требует перемен, требует крика, требует действий. Он устал быть просто 'другом из Орска'.", b: 'thoughts' },
-            // КОНЕЦ БЛОКА
             { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался из своего Орска!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
             { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает. Я люблю её.", b: 'home_bg', c: 'none' },
+            // ВОЗВРАЩЕННАЯ ПОДДЕРЖКА
+            { n: "Дима", t: "Сань, мы же всё видим. Ты в себе это не держи. Она классная, но ты себя не грызи. Мы с тобой в любой замес.", b: 'home_bg', c: 'none' },
+            { n: "Гоша", t: "Правильно Диман говорит. Ты — мужик, ты честный. А сейчас — давай за тебя, за твой отпуск!", b: 'home_bg', c: 'none' },
             { n: "Рассказчик", t: "Тяжесть начала понемногу отпускать. Начиналось настоящее веселье. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
         
