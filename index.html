@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V1.7</title>
+    <title>Sanya Quest V 1.8</title>
     <style>
-        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
+        body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
         
         #scene { 
@@ -16,9 +16,9 @@
 
         #ui {
             position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: #000; border-top: 3px solid #fc0; 
+            background: linear-gradient(to bottom, #111, #000); border-top: 2px solid #555; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 20px;
+            text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px;
         }
 
         #overlay {
@@ -26,29 +26,28 @@
             background: rgba(0,0,0,0.6); display: none; 
             flex-direction: column; align-items: center; justify-content: center; z-index: 50;
         }
-        #bar-container { width: 70%; height: 20px; border: 2px solid #fff; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        #bar-container { width: 70%; height: 20px; border: 1px solid #fff; border-radius: 5px; overflow: hidden; margin-top: 10px; }
         #fill { width: 0%; height: 100%; background: #fc0; }
 
-        #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 8px; }
-        #text { font-size: 18px; line-height: 1.3; }
-        #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #333; z-index: 1000; }
+        #name { color: #fc0; font-weight: bold; font-size: 20px; margin-bottom: 10px; letter-spacing: 2px; }
+        #text { font-size: 17px; line-height: 1.5; font-style: italic; color: #ddd; }
+        #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="v">V 1.7 - AIRPORT</div>
+    <div id="v">V 1.8 - DRAMA</div>
 
     <div id="game-container">
         <div id="scene">
             <div id="overlay" onclick="game.tap(event)">
-                <h2 style="margin:0; color:#fc0; font-size: 20px;">ДАВИ ТЯГУ!</h2>
+                <h2 style="margin:0; color:#fc0; font-size: 18px;">РАБОЧАЯ СМЕНА...</h2>
                 <div id="bar-container"><div id="fill"></div></div>
-                <p style="font-size:12px; margin-top:5px;">ЗАКОНЧИ СМЕНУ</p>
             </div>
         </div>
 
         <div id="ui" onclick="game.next()">
-            <div id="name">САНЯ</div>
-            <div id="text">Загрузка...</div>
+            <div id="name">СИСТЕМА</div>
+            <div id="text">Загрузка истории...</div>
         </div>
     </div>
 
@@ -59,7 +58,8 @@
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
-            airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg", // Аэропорт
+            airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
+            thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg", // Сцена раздумий
             bars: "https://i.ibb.co/39R0LNDX/1776641464055.png"
         },
         story: [
@@ -68,18 +68,28 @@
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: true },
             { n: "Саня", t: "Фух, наконец-то отпуск в РЖД! На билеты накопил, чемодан собрал.", b: 'airport' },
             { n: "Саня", t: "Лечу в Москву! Скорей бы уже увидеться с Димой и Гошей.", b: 'airport' },
+            // НОВАЯ СЦЕНА
+            { n: "Саня", t: "Гул самолёта убаюкивает, но я не могу уснуть. Все мысли только о ней... о Кате.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм, который выжигает всё живое. Он любит её каждой клеткой, но эта любовь отравлена неизвестностью.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар молота по наковальне сердца.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Но боль становится невыносимой. Сердце кричит, что тишина — это медленная смерть. Оно требует перемен, требует крика, требует действий. Он устал быть просто 'другом из Орска'.", b: 'thoughts' },
+            { n: "Саня", t: "Я не хочу лезть в их отношения... но и так больше не могу. Москва должна что-то изменить. Либо всё, либо ничего.", b: 'thoughts' },
             { n: "Система", t: "Продолжение следует...", b: 'bars' }
         ],
         update() {
             const s = this.story[this.idx];
-            if (!s) return;
             const scene = document.getElementById('scene');
             const overlay = document.getElementById('overlay');
+            const nameEl = document.getElementById('name');
 
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
-            document.getElementById('name').innerText = s.n;
+            nameEl.innerText = s.n;
             document.getElementById('text').innerText = s.t;
             overlay.style.display = s.hasGame ? 'flex' : 'none';
+
+            // Меняем цвет имени для Рассказчика
+            nameEl.style.color = (s.n === "Рассказчик") ? "#aaa" : "#fc0";
         },
         next() {
             if (this.story[this.idx].hasGame) return;
