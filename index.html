@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 4.3 - Audio Fix</title>
+    <title>Sanya Quest V 4.4 - Character Colors</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
@@ -30,11 +30,11 @@
             20%, 40%, 60%, 80% { transform: translate3d(8px, 0, 0); }
         }
 
-        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; transition: border-color 0.4s; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; }
         
-        #name { color: #fc0; font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
+        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.4s; }
         #text { font-size: 17px; line-height: 1.4; color: #eee; }
         
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
@@ -43,7 +43,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 4.3 - AUTO-AUDIO FIX</div>
+    <div id="v">V 4.4 - COLORS UPDATE</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -58,7 +58,7 @@
         <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
             <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
-            <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;"></p>
+            <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
         <div id="ui">
             <div id="name">САНЯ</div>
@@ -85,6 +85,14 @@
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
+        },
+        // Справочник цветов героев
+        colors: {
+            "Саня": "#fc0",
+            "Дима": "#ff3030",
+            "Гоша": "#30ff30",
+            "Работа": "#fc0",
+            "Рассказчик": "#888"
         },
         story: [
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning' },
@@ -116,9 +124,8 @@
                 musicGain.connect(audioCtx.destination);
                 musicGain.gain.value = 0.4;
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
-                this.startMusic(); // Запуск музыки ПРИ ИНИЦИАЛИЗАЦИИ
-            } catch(e) { console.log("Audio init error:", e); }
-            
+                this.startMusic();
+            } catch(e) {}
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-container').style.display = 'flex';
             this.update();
@@ -141,132 +148,4 @@
             if (this.musicStarted || !audioCtx) return;
             this.musicStarted = true;
             setInterval(() => {
-                if (this.isMuted || audioCtx.state === 'suspended') return;
-                try {
-                    const f = [196, 220, 246, 261][Math.floor(Date.now()/1200)%4];
-                    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
-                    g.gain.setValueAtTime(0, audioCtx.currentTime);
-                    g.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.1);
-                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
-                    osc.connect(g); g.connect(musicGain); osc.start(); osc.stop(audioCtx.currentTime + 2.5);
-                } catch(e) {}
-            }, 1250);
-        },
-
-        toggleMusic(e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-            this.isMuted = !this.isMuted;
-            document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
-            if (!this.musicStarted) this.startMusic();
-        },
-
-        typeText(element, text) {
-            let i = 0; element.innerHTML = ""; this.isTyping = true;
-            document.getElementById('next-btn').style.display = 'none';
-            if (this.textTimer) clearInterval(this.textTimer);
-            this.textTimer = setInterval(() => {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    if (text.charAt(i) !== " ") this.playClick();
-                    i++;
-                } else { 
-                    clearInterval(this.textTimer); this.isTyping = false;
-                    if (!this.story[this.idx].hasGame) document.getElementById('next-btn').style.display = 'block';
-                }
-            }, 30);
-        },
-
-        update() {
-            const s = this.story[this.idx];
-            const scene = document.getElementById('scene');
-            const hero = document.getElementById('hero');
-            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
-            
-            if (s.c && s.c !== 'none') {
-                scene.classList.add('focus-mode');
-                hero.src = this.imgs[s.c];
-                hero.style.display = 'block';
-                hero.style.opacity = '1';
-            } else {
-                scene.classList.remove('focus-mode');
-                hero.style.opacity = '0';
-                setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
-            }
-            
-            const nameEl = document.getElementById('name');
-            nameEl.innerText = s.n;
-            nameEl.style.color = (s.n === "Рассказчик") ? "#888" : "#fc0";
-            
-            const overlay = document.getElementById('overlay');
-            if (s.hasGame) {
-                this.score = 0;
-                document.getElementById('fill').style.width = '0%';
-                overlay.style.display = 'flex';
-                overlay.classList.remove('fail-state');
-                document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
-                this.startDrain(s.hasGame);
-            } else {
-                overlay.style.display = 'none';
-                this.stopDrain();
-            }
-            this.typeText(document.getElementById('text'), s.t);
-        },
-
-        startDrain(type) {
-            this.stopDrain();
-            this.drainInterval = setInterval(() => {
-                if (this.score > 0) {
-                    let penalty = (type === "train") ? 2.5 : (1.9 + (this.score / 20));
-                    this.score -= penalty;
-                    document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
-                }
-            }, 100);
-        },
-
-        stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
-
-        next() {
-            if (this.isTyping || this.story[this.idx].hasGame) return;
-            this.idx = (this.idx + 1) % this.story.length;
-            this.update();
-        },
-
-        tap(e) {
-            e.preventDefault(); e.stopPropagation();
-            if (!this.story[this.idx].hasGame) return;
-            const type = this.story[this.idx].hasGame;
-            this.score += (type === "train") ? 9 : 11;
-            
-            if (type === "nuggets" && this.score >= 90) {
-                this.stopDrain();
-                const overlay = document.getElementById('overlay');
-                const container = document.getElementById('game-container');
-                overlay.classList.add('fail-state');
-                container.classList.add('long-shake', 'red-alert');
-                this.score = 0;
-                document.getElementById('fill').style.width = '0%';
-                setTimeout(() => {
-                    container.classList.remove('long-shake', 'red-alert');
-                    overlay.classList.remove('fail-state');
-                    this.story[this.idx].hasGame = false;
-                    this.next();
-                }, 1800);
-                return;
-            }
-
-            if (this.score >= 100) {
-                this.score = 100;
-                document.getElementById('fill').style.width = '100%';
-                this.stopDrain();
-                this.story[this.idx].hasGame = false;
-                setTimeout(() => this.next(), 200);
-            } else {
-                document.getElementById('fill').style.width = this.score + '%';
-            }
-        }
-    };
-</script>
-</body>
-</html>
+                if (
