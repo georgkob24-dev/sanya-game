@@ -3,85 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest</title>
+    <title>Sanya Quest V1.2</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; }
-        #scene { flex: 1; position: relative; background-size: cover; background-position: center; background-color: #1a1a1a; }
-        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 5; display: none; pointer-events: none; }
-        #ui { height: 35%; background: #000; border-top: 3px solid #fc0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; box-sizing: border-box; }
-        #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 8px; min-height: 26px; }
-        #text { font-size: 18px; line-height: 1.3; min-height: 50px; }
-        #hint { font-size: 10px; color: #444; margin-top: 10px; text-transform: uppercase; }
+        
+        /* Фон - строго под всем остальным */
+        #scene { 
+            flex: 1; position: relative; 
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat;
+            background-color: #000; 
+        }
+
+        /* Персонаж - поверх фона, с прозрачным фоном */
+        #hero { 
+            position: absolute; bottom: 0; left: 50%; 
+            transform: translateX(-50%); height: 90%; 
+            z-index: 5; display: none; pointer-events: none;
+        }
+
+        #ui {
+            height: 35%; background: #000; border-top: 3px solid #fc0; 
+            padding: 20px; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; text-align: center; 
+            cursor: pointer; box-sizing: border-box; z-index: 10;
+        }
+
+        #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 8px; }
+        #text { font-size: 18px; line-height: 1.3; }
+        #version { position: fixed; top: 10px; right: 10px; font-size: 10px; color: #333; }
     </style>
 </head>
 <body>
+    <div id="version">V 1.2</div>
     <div id="game-container">
         <div id="scene"><img id="hero" src="" alt=""></div>
         <div id="ui" onclick="game.next()">
             <div id="name">СИСТЕМА</div>
-            <div id="text">Загрузка...</div>
-            <div id="hint">Нажми, чтобы начать</div>
+            <div id="text">Запуск...</div>
         </div>
     </div>
 
 <script>
-    const el = {
-        name: document.getElementById('name'),
-        text: document.getElementById('text'),
-        scene: document.getElementById('scene'),
-        hero: document.getElementById('hero')
-    };
-
     const game = {
         idx: 0,
         imgs: {
-            cab: "https://i.ibb.co/TD8nkb1K/1776641277961.png",      // Кабина поезда
-            bars: "https://i.ibb.co/39R0LNDX/1776641464055.png",     // Саня (герой)
-            home: "https://i.ibb.co/mrWfGrYh/1776641563597.png",     // У Димы
-            dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",     // Дима
-            gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png"      // Гоша
+            cab: "https://i.ibb.co/TD8nkb1K/1776641277961.png",      // Фон: Кабина
+            bars: "https://i.ibb.co/39R0LNDX/1776641464055.png",     // Персонаж: Саня
+            home: "https://i.ibb.co/mrWfGrYh/1776641563597.png",     // Фон: Квартира
+            dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",     // Персонаж: Дима
+            gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png"      // Персонаж: Гоша
         },
-        // ОБНОВЛЕННЫЙ СЮЖЕТ: Начинаем с отъезда
         story: [
-            { n: "Саня", t: "Так, Орск позади. Впереди — Москва и новая жизнь. Главное — не оглядываться.", c: 'bars', b: 'cab' },
-            { n: "Саня", t: "Всё, пацаны. Я на месте! Москва, встречай машиниста!", c: 'bars', b: 'cab' },
-            { n: "Дима", t: "Саня, наконец-то! Ну ты и вымахал, столичный житель теперь!", c: 'dima', b: 'bars' },
-            { n: "Гоша", t: "Здорово, Саня! Мы тут уже всё спланировали. Погнали отмечать твой приезд!", c: 'gosha', b: 'bars' },
-            { n: "У Димы", t: "Слушайте... Я в Катю влюбился. Сильно. Но она осталась в Оренбурге.", c: 'bars', b: 'home' },
-            { n: "Дима", t: "Дела... И что теперь? Обратно поедешь или её сюда перетащишь?", c: 'dima', b: 'home' },
-            { n: "Система", t: "Конец демо-версии. Саня должен принять решение...", c: 'bars', b: 'home' }
+            { n: "Саня", t: "Орск, до связи. Я поехал покорять столицу!", c: 'bars', b: 'cab' },
+            { n: "Саня", t: "Ну вот она, Москва! Прямо из кабины смотрится мощно.", c: 'bars', b: 'cab' },
+            { n: "Дима", t: "Саня! Наконец-то! Здорово, бро!", c: 'dima', b: 'cab' },
+            { n: "Гоша", t: "Здорово, машинист! Какие планы на вечер?", c: 'gosha', b: 'cab' },
+            { n: "У Димы", t: "Наконец-то в тишине. Пацаны, я в Катю влюбился...", c: 'none', b: 'home' },
+            { n: "Дима", t: "В Катю? Ту самую из Оренбурга? Ну ты даёшь!", c: 'dima', b: 'home' }
         ],
         update() {
             const s = this.story[this.idx];
             if (!s) return;
 
-            el.name.innerText = s.n;
-            el.text.innerText = s.t;
-            el.scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+            const scene = document.getElementById('scene');
+            const hero = document.getElementById('hero');
 
-            if (s.b === 'home') {
-                el.hero.style.display = 'none';
-                el.hero.src = ""; 
+            // 1. Сначала меняем фон
+            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+
+            // 2. Логика персонажа
+            if (s.c === 'none') {
+                hero.style.display = 'none';
+                hero.src = ""; // Важно: очищаем путь, чтобы картинка не висела в памяти
             } else {
-                el.hero.src = this.imgs[s.c];
-                el.hero.style.display = 'block';
+                hero.src = this.imgs[s.c];
+                hero.style.display = 'block';
             }
+
+            document.getElementById('name').innerText = s.n;
+            document.getElementById('text').innerText = s.t;
         },
         next() {
             this.idx++;
-            if (this.idx >= this.story.length) {
-                this.idx = 0; // Начинаем заново после финала
-            }
+            if (this.idx >= this.story.length) this.idx = 0;
             this.update();
         }
     };
 
-    // Принудительный сброс на начало при каждой загрузке
-    document.addEventListener('DOMContentLoaded', () => {
-        game.idx = 0; 
-        setTimeout(() => { game.update(); }, 150);
-    });
+    // Гарантируем запуск с 0 индекса
+    window.onload = () => {
+        game.idx = 0;
+        game.update();
+    };
 </script>
 </body>
 </html>
