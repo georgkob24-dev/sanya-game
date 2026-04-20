@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 4.4 - Character Colors</title>
+    <title>Sanya Quest V 4.5 - Animations Update</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
         
         #start-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
-
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.4s, filter 0.5s, transform 0.5s; }
         .focus-mode { filter: blur(8px) brightness(0.4); transform: scale(1.05); }
-
-        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.3s, transform 0.3s; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.3s; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
@@ -29,7 +27,6 @@
             10%, 30%, 50%, 70%, 90% { transform: translate3d(-8px, 0, 0); }
             20%, 40%, 60%, 80% { transform: translate3d(8px, 0, 0); }
         }
-
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; transition: border-color 0.4s; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; }
@@ -40,18 +37,38 @@
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
+        
+        /* --- НОВЫЕ АНИМАЦИИ --- */
+        .hero-enter { animation: hero-enter-anim 0.5s ease-out forwards; }
+        @keyframes hero-enter-anim {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translateX(-50%); }
+        }
+
+        .hero-idle { animation: hero-idle-anim 4s ease-in-out infinite; }
+        @keyframes hero-idle-anim {
+            0%, 100% { transform: translate(-50%, 0); }
+            50% { transform: translate(-50%, -10px); }
+        }
+
+        .shake-quick { animation: shake-quick-anim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-quick-anim {
+            0%, 100% { transform: translate(0, 0); }
+            25%, 75% { transform: translate(-3px, 0); }
+            50% { transform: translate(3px, 0); }
+        }
+        /* --- КОНЕЦ НОВЫХ АНИМАЦИЙ --- */
+
     </style>
 </head>
 <body>
-    <div id="v">V 4.4 - COLORS UPDATE</div>
+    <div id="v">V 4.5 - ANIMATIONS UPDATE</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
         <button id="start-btn" onclick="game.init()">НАЧАТЬ ИГРАТЬ</button>
     </div>
-
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
-
     <div id="game-container">
         <div id="scene"></div>
         <img id="hero" src="" alt="">
@@ -70,7 +87,6 @@
 <script>
     let audioCtx = null;
     let musicGain = null;
-
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null,
         imgs: {
@@ -86,13 +102,9 @@
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
         },
-        // Справочник цветов героев
         colors: {
-            "Саня": "#fc0",
-            "Дима": "#ff3030",
-            "Гоша": "#30ff30",
-            "Работа": "#fc0",
-            "Рассказчик": "#888"
+            "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30",
+            "Работа": "#fc0", "Рассказчик": "#888"
         },
         story: [
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning' },
@@ -111,7 +123,8 @@
             { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
             { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home' },
+            // СТРОКА ИЗМЕНЕНА: Добавлен эффект тряски
+            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
             { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
             { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
@@ -134,8 +147,7 @@
         playClick() {
             if (!audioCtx || this.isMuted) return;
             try {
-                const osc = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
+                const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
                 osc.type = 'sine'; osc.frequency.setValueAtTime(280, audioCtx.currentTime);
                 g.gain.setValueAtTime(0.04, audioCtx.currentTime);
                 g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
@@ -148,4 +160,155 @@
             if (this.musicStarted || !audioCtx) return;
             this.musicStarted = true;
             setInterval(() => {
-                if (
+                if (this.isMuted || audioCtx.state === 'suspended') return;
+                try {
+                    const f = [196, 220, 246, 261][Math.floor(Date.now()/1200)%4];
+                    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(f/2, audioCtx.currentTime);
+                    g.gain.setValueAtTime(0, audioCtx.currentTime);
+                    g.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.1);
+                    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.5);
+                    osc.connect(g); g.connect(musicGain); osc.start(); osc.stop(audioCtx.currentTime + 2.5);
+                } catch(e) {}
+            }, 1250);
+        },
+
+        toggleMusic(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            this.isMuted = !this.isMuted;
+            document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
+            if (!this.musicStarted) this.startMusic();
+        },
+
+        typeText(element, text) {
+            let i = 0; element.innerHTML = ""; this.isTyping = true;
+            document.getElementById('next-btn').style.display = 'none';
+            if (this.textTimer) clearInterval(this.textTimer);
+            this.textTimer = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (text.charAt(i) !== " ") this.playClick();
+                    i++;
+                } else { 
+                    clearInterval(this.textTimer); this.isTyping = false;
+                    if (!this.story[this.idx].hasGame) document.getElementById('next-btn').style.display = 'block';
+                }
+            }, 30);
+        },
+        
+        // ФУНКЦИЯ ИЗМЕНЕНА: Добавлено управление CSS-классами для анимаций
+        update() {
+            const s = this.story[this.idx];
+            const scene = document.getElementById('scene');
+            const hero = document.getElementById('hero');
+            const ui = document.getElementById('ui');
+            const nameEl = document.getElementById('name');
+            const nextBtn = document.getElementById('next-btn');
+
+            // Очищаем классы анимаций с прошлого шага
+            hero.className = ''; 
+            scene.classList.remove('shake-quick');
+
+            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+            
+            const charColor = this.colors[s.n] || "#fff";
+            nameEl.style.color = charColor;
+            ui.style.borderColor = charColor;
+            nextBtn.style.background = charColor;
+            
+            if (s.c && s.c !== 'none') {
+                scene.classList.add('focus-mode');
+                hero.src = this.imgs[s.c];
+                hero.style.display = 'block';
+
+                // Добавляем классы для анимации появления и дыхания
+                hero.classList.add('hero-enter', 'hero-idle');
+
+            } else {
+                scene.classList.remove('focus-mode');
+                hero.style.opacity = '0'; // Для плавного исчезновения
+                // Убираем класс дыхания, когда персонажа нет
+                hero.classList.remove('hero-idle'); 
+                setTimeout(() => { 
+                    if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; 
+                }, 300);
+            }
+            
+            // Проверяем, есть ли у сцены специальный эффект
+            if (s.effect && s.effect === 'shake-quick') {
+                scene.classList.add('shake-quick');
+            }
+
+            nameEl.innerText = s.n;
+            
+            const overlay = document.getElementById('overlay');
+            if (s.hasGame) {
+                this.score = 0;
+                document.getElementById('fill').style.width = '0%';
+                overlay.style.display = 'flex';
+                overlay.classList.remove('fail-state');
+                document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
+                this.startDrain(s.hasGame);
+            } else {
+                overlay.style.display = 'none';
+                this.stopDrain();
+            }
+            this.typeText(document.getElementById('text'), s.t);
+        },
+
+        startDrain(type) {
+            this.stopDrain();
+            this.drainInterval = setInterval(() => {
+                if (this.score > 0) {
+                    let penalty = (type === "train") ? 2.5 : (1.9 + (this.score / 20));
+                    this.score -= penalty;
+                    document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
+                }
+            }, 100);
+        },
+
+        stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
+
+        next() {
+            if (this.isTyping || this.story[this.idx].hasGame) return;
+            this.idx = (this.idx + 1) % this.story.length;
+            this.update();
+        },
+
+        tap(e) {
+            e.preventDefault(); e.stopPropagation();
+            if (!this.story[this.idx].hasGame) return;
+            const type = this.story[this.idx].hasGame;
+            this.score += (type === "train") ? 9 : 11;
+            
+            if (type === "nuggets" && this.score >= 90) {
+                this.stopDrain();
+                const overlay = document.getElementById('overlay');
+                const container = document.getElementById('game-container');
+                overlay.classList.add('fail-state');
+                container.classList.add('long-shake', 'red-alert');
+                this.score = 0;
+                document.getElementById('fill').style.width = '0%';
+                setTimeout(() => {
+                    container.classList.remove('long-shake', 'red-alert');
+                    overlay.classList.remove('fail-state');
+                    this.story[this.idx].hasGame = false;
+                    this.next();
+                }, 1800);
+                return;
+            }
+            if (this.score >= 100) {
+                this.score = 100;
+                document.getElementById('fill').style.width = '100%';
+                this.stopDrain();
+                this.story[this.idx].hasGame = false;
+                setTimeout(() => this.next(), 200);
+            } else {
+                document.getElementById('fill').style.width = this.score + '%';
+            }
+        }
+    };
+</script>
+</body>
+</html>
