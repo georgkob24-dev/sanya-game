@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.7</title>
+    <title>Sanya Quest V 2.8 - Interface Update</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
@@ -12,16 +12,27 @@
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 500; cursor: pointer; user-select: none; }
         #bar-container { width: 70%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; pointer-events: none; }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.1s; }
-        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
+        
+        /* UI и Кнопка */
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; z-index: 10; box-sizing: border-box; padding: 25px; cursor: default; }
+        #next-btn { 
+            position: absolute; bottom: 20px; right: 20px; 
+            background: #fc0; color: #000; border: none; 
+            padding: 10px 25px; font-weight: bold; font-family: 'Georgia', serif;
+            cursor: pointer; display: none; border-radius: 5px; font-size: 16px;
+            box-shadow: 0 0 10px rgba(252, 204, 0, 0.4);
+        }
+        #next-btn:active { transform: scale(0.95); }
+
         #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
-        #text { font-size: 19px; line-height: 1.5; color: #eee; min-height: 4.5em; }
+        #text { font-size: 19px; line-height: 1.5; color: #eee; min-height: 4.5em; max-width: 85%; }
         #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.8); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 2px solid #fc0; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
         @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
     </style>
 </head>
 <body>
-    <div id="v">V 2.7 - AUDIO & SCRIPT FIX</div>
+    <div id="v">V 2.8 - NAV BUTTON</div>
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
@@ -33,9 +44,10 @@
                 <p style="color: #fff; margin-top: 20px; font-size: 18px; font-weight: bold; animation: blink 1s infinite;">КЛИКАЙ!</p>
             </div>
         </div>
-        <div id="ui" onclick="game.next()">
+        <div id="ui">
             <div id="name">САНЯ</div>
             <div id="text"></div>
+            <button id="next-btn" onclick="game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
 
@@ -43,7 +55,7 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicGain = audioCtx.createGain();
     musicGain.connect(audioCtx.destination);
-    musicGain.gain.value = 0.8; // Музыка стала значительно громче
+    musicGain.gain.value = 0.8;
 
     function playRetroClick() {
         if (game.isMuted) return;
@@ -51,7 +63,7 @@
         const g = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(280, audioCtx.currentTime);
-        g.gain.setValueAtTime(0.2, audioCtx.currentTime); // Скорректировано под новую громкость музыки
+        g.gain.setValueAtTime(0.2, audioCtx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
         osc.connect(g); g.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.04);
@@ -64,7 +76,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time);
         g.gain.setValueAtTime(0, time);
-        g.gain.linearRampToValueAtTime(0.5, time + 0.1); // Пиковая громкость шага музыки
+        g.gain.linearRampToValueAtTime(0.5, time + 0.1);
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc.connect(g); g.connect(musicGain);
         osc.start(time); osc.stop(time + dur);
@@ -95,7 +107,6 @@
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
             { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает. Я люблю её.", b: 'home_bg', c: 'none' },
-            // ВОЗВРАЩЕННАЯ ПОДДЕРЖКА
             { n: "Дима", t: "Сань, мы же всё видим. Ты в себе это не держи. Она классная, но ты себя не грызи. Мы с тобой в любой замес.", b: 'home_bg', c: 'none' },
             { n: "Гоша", t: "Правильно Диман говорит. Ты — мужик, ты честный. А сейчас — давай за тебя, за твой отпуск!", b: 'home_bg', c: 'none' },
             { n: "Рассказчик", t: "Тяжесть начала понемногу отпускать. Начиналось настоящее веселье. Продолжение следует...", b: 'home_bg', c: 'none' }
@@ -122,12 +133,21 @@
 
         typeText(element, text) {
             let i = 0; element.innerHTML = ""; this.isTyping = true;
+            document.getElementById('next-btn').style.display = 'none'; // Скрываем кнопку пока печатаем
+            
             const timer = setInterval(() => {
                 if (i < text.length) {
                     element.innerHTML += text.charAt(i);
                     if (text.charAt(i) !== " ") playRetroClick();
                     i++;
-                } else { clearInterval(timer); this.isTyping = false; }
+                } else { 
+                    clearInterval(timer); 
+                    this.isTyping = false;
+                    // Показываем кнопку только если нет мини-игры
+                    if (!this.story[this.idx].hasGame) {
+                        document.getElementById('next-btn').style.display = 'block';
+                    }
+                }
             }, 40);
         },
 
@@ -146,7 +166,6 @@
         },
 
         next() {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
             if (this.isTyping || this.story[this.idx].hasGame) return;
             this.idx++;
             if (this.idx >= this.story.length) this.idx = 0;
