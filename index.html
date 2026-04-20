@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 7.1 - Master Edition</title>
+    <title>Sanya Quest V 7.2 - Cinematic Update</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
-        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
+        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
         
-        #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
+        #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; }
 
         #start-screen, #end-screen, #fail-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
         #fail-screen { display: none; background: #900; z-index: 2500; }
 
         .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
-        .reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 13px; border-radius: 5px; cursor: pointer; transition: color 0.3s; }
-        .reset-btn:hover { color: #f44; border-color: #f44; }
+        .reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 13px; border-radius: 5px; cursor: pointer; }
 
-        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: background 0.6s, filter 0.5s; }
+        /* Эффект перехода */
+        #fade-layer { position: absolute; top:0; left:0; width:100%; height:100%; background: #000; z-index: 150; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        .fade-active { opacity: 1 !important; }
+
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
         
         #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transform-origin: bottom center; }
@@ -28,7 +31,13 @@
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
         
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
-        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
+        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; }
+        
+        /* Выборы */
+        #choice-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 110; }
+        .choice-btn { background: #222; color: #fc0; border: 1px solid #fc0; padding: 12px 20px; margin: 8px; width: 85%; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        .choice-btn:active { background: #fc0; color: #000; }
+
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; }
         #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; }
 
@@ -38,19 +47,22 @@
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 3000; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 
         /* Анимации */
+        .shake-text { display: inline-block; animation: text-shake-anim 0.2s infinite; color: #f44 !important; }
+        @keyframes text-shake-anim { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -1px); } 50% { transform: translate(-1px, 1px); } 75% { transform: translate(1px, -1px); } 100% { transform: translate(1px, 1px); } }
+        
         .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
         @keyframes hero-enter-anim { from { opacity: 0; transform: translate(-50%, 40px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
         @keyframes hero-breathing { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, -10px) scale(1.02); } }
+        
         .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-15px, 0); } 20%, 40% , 60%, 80% { transform: translate(15px, 0); } }
+        @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); } 20%, 40%, 60%, 80% { transform: translate(10px, 0); } }
         .red-alert { filter: sepia(1) saturate(15) hue-rotate(-50deg) !important; }
-        .fail-ui #fill { background: #f00 !important; box-shadow: 0 0 30px #f00; }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="version-tag">V 7.1</div>
+    <div id="version-tag">V 7.2</div>
 
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
@@ -73,6 +85,7 @@
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
+        <div id="fade-layer"></div>
         <div id="scene"></div>
         <img id="hero" src="" alt="">
         <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
@@ -81,6 +94,7 @@
             <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
         <div id="ui">
+            <div id="choice-container"></div>
             <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
             <button id="prev-btn" onclick="game.prev()">←</button>
@@ -112,7 +126,7 @@
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
             { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
-            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts' },
+            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts', choices: ["Написать ей?", "Просто смотреть в окно"] },
             { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути...", b: 'thoughts', c: 'thoughts' },
             { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив...", b: 'thoughts', c: 'thoughts' },
             { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts', c: 'thoughts' },
@@ -120,13 +134,13 @@
             { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди встреча, которая либо подарит жизнь, либо добьет.", b: 'thoughts', c: 'thoughts' },
             { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
-            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none', choices: ["Рассказать всё как есть", "Попробовать отшутиться"] },
             { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
             { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
             { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
             { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
-            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
+            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets", shakeOnType: true },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
             { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
@@ -146,12 +160,7 @@
             this.update();
         },
 
-        confirmReset() {
-            if (confirm("Весь прогресс будет удален. Вы уверены?")) {
-                this.resetSave();
-            }
-        },
-
+        confirmReset() { if (confirm("Весь прогресс будет удален. Вы уверены?")) this.resetSave(); },
         resetSave() { localStorage.removeItem('sanya_quest_idx'); location.reload(); },
         restartLevel() { document.getElementById('fail-screen').style.display = 'none'; this.update(); },
 
@@ -186,8 +195,9 @@
             document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
         },
 
-        typeText(element, text) {
+        typeText(element, text, shake) {
             let i = 0; element.innerHTML = ""; this.isTyping = true;
+            element.className = shake ? "shake-text" : "";
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('prev-btn').style.display = 'none';
             if (this.textTimer) clearInterval(this.textTimer);
@@ -198,15 +208,39 @@
                     i++;
                 } else { 
                     clearInterval(this.textTimer); this.isTyping = false;
-                    if (!this.gameActive) {
-                        document.getElementById('next-btn').style.display = 'block';
-                        if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
-                    }
+                    this.showPostTypingUI();
                 }
             }, 30);
         },
 
-        update() {
+        showPostTypingUI() {
+            const s = this.story[this.idx];
+            if (s.choices && !this.gameActive) {
+                this.showChoices(s.choices);
+            } else if (!this.gameActive) {
+                document.getElementById('next-btn').style.display = 'block';
+                if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
+            }
+        },
+
+        showChoices(choices) {
+            const container = document.getElementById('choice-container');
+            container.innerHTML = "";
+            choices.forEach(c => {
+                const b = document.createElement('button');
+                b.className = 'choice-btn';
+                b.innerText = c;
+                b.onclick = () => { container.style.display = 'none'; this.next(); };
+                container.appendChild(b);
+            });
+            container.style.display = 'flex';
+        },
+
+        async update() {
+            const fade = document.getElementById('fade-layer');
+            fade.classList.add('fade-active');
+            await new Promise(r => setTimeout(r, 500));
+
             localStorage.setItem('sanya_quest_idx', this.idx);
             const s = this.story[this.idx];
             const scene = document.getElementById('scene');
@@ -214,6 +248,7 @@
             const ui = document.getElementById('ui');
             const nameEl = document.getElementById('name');
 
+            document.getElementById('choice-container').style.display = 'none';
             hero.className = ''; scene.className = ''; hero.style.opacity = '';
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             nameEl.style.color = this.colors[s.n] || "#fff";
@@ -229,12 +264,9 @@
                 setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
             }
             
-            if (s.effect === 'shake-quick') scene.classList.add('shake-quick');
-            
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
-                this.gameActive = true; this.score = 30; 
-                this.gameStartTime = Date.now();
+                this.gameActive = true; this.score = 30; this.gameStartTime = Date.now();
                 document.getElementById('fill').style.width = '30%';
                 overlay.style.display = 'flex';
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
@@ -242,7 +274,9 @@
             } else {
                 this.gameActive = false; overlay.style.display = 'none'; this.stopDrain();
             }
-            this.typeText(document.getElementById('text'), s.t);
+
+            fade.classList.remove('fade-active');
+            this.typeText(document.getElementById('text'), s.t, s.shakeOnType);
         },
 
         startDrain(type) {
@@ -251,8 +285,7 @@
                 if (this.gameActive) {
                     this.score -= (type === "train") ? 3.5 : 2.0; 
                     if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 2000)) {
-                        this.stopDrain();
-                        this.gameActive = false;
+                        this.stopDrain(); this.gameActive = false;
                         document.getElementById('fail-screen').style.display = 'flex';
                     }
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
@@ -263,7 +296,7 @@
         stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
 
         next() { 
-            if (this.isTyping || this.gameActive) return;
+            if (this.isTyping || this.gameActive || document.getElementById('choice-container').style.display === 'flex') return;
             if (this.idx < this.story.length - 1) { this.idx++; this.update(); } 
             else { document.getElementById('end-screen').style.display = 'flex'; }
         },
@@ -281,7 +314,6 @@
                 const container = document.getElementById('game-container');
                 document.getElementById('overlay').classList.add('fail-ui');
                 container.classList.add('long-shake', 'red-alert');
-                this.score = 0; document.getElementById('fill').style.width = '0%';
                 setTimeout(() => {
                     container.classList.remove('long-shake', 'red-alert');
                     document.getElementById('overlay').classList.remove('fail-ui');
