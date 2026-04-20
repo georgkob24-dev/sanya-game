@@ -3,64 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.0</title>
+    <title>Sanya Quest V 2.1 - Retro Sound</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
-        
-        #scene { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 65%;
-            background-size: cover; background-position: center; 
-            background-repeat: no-repeat; background-color: #000; z-index: 1;
-        }
-
-        #hero { 
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            height: 90%; z-index: 2; display: none; pointer-events: none;
-        }
-
-        #ui {
-            position: absolute; bottom: 0; width: 100%; height: 35%;
-            background: linear-gradient(to bottom, #111, #000); border-top: 2px solid #fc0; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px;
-        }
-
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 65%;
-            background: rgba(0,0,0,0.6); display: none; 
-            flex-direction: column; align-items: center; justify-content: center; z-index: 50;
-        }
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; z-index: 1; }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 2; display: none; pointer-events: none; }
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 2px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background: rgba(0,0,0,0.6); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
         #bar-container { width: 70%; height: 20px; border: 1px solid #fff; border-radius: 5px; overflow: hidden; margin-top: 10px; }
         #fill { width: 0%; height: 100%; background: #fc0; }
-
         #name { color: #fc0; font-weight: bold; font-size: 20px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
-        #text { font-size: 17px; line-height: 1.5; color: #ddd; }
+        #text { font-size: 17px; line-height: 1.5; color: #ddd; min-height: 4.5em; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="v">V 2.0 - SOUL TALK</div>
-
+    <div id="v">V 2.1 - AUDIO ENGINE</div>
     <div id="game-container">
-        <div id="scene">
-            <img id="hero" src="" alt="">
-            <div id="overlay" onclick="game.tap(event)">
-                <h2 style="margin:0; color:#fc0; font-size: 18px;">ДАВИ ТЯГУ!</h2>
-                <div id="bar-container"><div id="fill"></div></div>
-            </div>
-        </div>
-
-        <div id="ui" onclick="game.next()">
-            <div id="name">САНЯ</div>
-            <div id="text">...</div>
-        </div>
+        <div id="scene"><img id="hero" src="" alt=""><div id="overlay" onclick="game.tap(event)"><h2>ДАВИ ТЯГУ!</h2><div id="bar-container"><div id="fill"></div></div></div></div>
+        <div id="ui" onclick="game.next()"><div id="name">САНЯ</div><div id="text"></div></div>
     </div>
 
 <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playRetroClick() {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square'; // Квадратная волна дает тот самый 8-битный звук
+        osc.frequency.setValueAtTime(150 + Math.random() * 50, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+    }
+
     const game = {
-        idx: 0,
-        score: 0,
+        idx: 0, score: 0, isTyping: false,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -74,78 +56,62 @@
         story: [
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город.", b: 'morning' },
             { n: "Саня", t: "Надо попить кофе и идти на работу. Железная дорога ждать не будет.", b: 'morning' },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Москва сама себя не построит.", b: 'work', hasGame: true },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: true },
             { n: "Саня", t: "Фух, наконец-то отпуск в РЖД! На билеты накопил, чемодан собрал. Лечу!", b: 'airport' },
-            
-            // БЛОК В САМОЛЕТЕ
             { n: "Саня", t: "Гул самолёта убаюкивает, но я не могу уснуть. Все мысли только о ней... о Кате.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм, который выжигает всё живое. Он любит её каждой клеткой, но эта любовь отравлена неизвестностью.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар молота по наковальне сердца.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Но боль становится невыносимой. Сердце кричит, что тишина — это медленная смерть. Оно требует перемен, требует крика, требует действий. Он устал быть просто 'другом из Орска'.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Облака под крылом самолета кажутся ватой, скрывающей реальность. Саня смотрит в иллюминатор и понимает: пришло время что-то менять. Хватит плыть по течению чужих драм.", b: 'thoughts' },
-            
-            // ВСТРЕЧА
-            { n: "Дима", t: "Саня! Брат! Ты посмотри на этого столичного пижона! Здорово!", b: 'bar_bg', c: 'dima' },
+            { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм, который выжигает всё живое.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести.", b: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался из своего Орска!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
-            
-            // ДОМА У ДИМЫ (Без спрайтов)
-            { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме, где разговоры стали тише, а искренность — острее.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Я люблю её. Люблю так, что дышать больно. Но у неё там своя жизнь, свой парень... А я будто в зале ожидания застрял.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, мы же всё видим. Ты в себе это не держи. Она классная, но ты себя не грызи. Мы с тобой в любой замес.", b: 'home_bg', c: 'none' },
-            { n: "Гоша", t: "Правильно Диман говорит. Ты — мужик, ты честный. Если надо будет — разберемся. А сейчас — давай за тебя, за твой отпуск!", b: 'home_bg', c: 'none' },
-            { n: "Рассказчик", t: "Тяжесть, копившаяся месяцами в Орске, начала понемногу отпускать. В кругу друзей Саня наконец почувствовал, что он не один в этой темноте.", b: 'home_bg', c: 'none' },
-            { n: "Рассказчик", t: "Алкоголь разливался по венам приятным теплом, музыка в колонках стала громче. Начиналось настоящее веселье, где нет места боли.", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает. Я люблю её.", b: 'home_bg', c: 'none' },
+            { n: "Дима", t: "Сань, мы же всё видим. Ты в себе это не держи. Мы с тобой в любой замес.", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Алкоголь разливался по венам приятным теплом. Начиналось настоящее веселье.", b: 'home_bg', c: 'none' },
             { n: "Система", t: "Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
+        typeText(element, text) {
+            let i = 0;
+            element.innerHTML = "";
+            this.isTyping = true;
+            
+            const timer = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    if (text.charAt(i) !== " ") playRetroClick();
+                    i++;
+                } else {
+                    clearInterval(timer);
+                    this.isTyping = false;
+                }
+            }, 40); // Скорость печати
+        },
         update() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const s = this.story[this.idx];
-            const scene = document.getElementById('scene');
+            document.getElementById('scene').style.backgroundImage = `url('${this.imgs[s.b]}')`;
             const hero = document.getElementById('hero');
-            const overlay = document.getElementById('overlay');
+            if (s.c && s.c !== 'none') { hero.src = this.imgs[s.c]; hero.style.display = 'block'; } else { hero.style.display = 'none'; }
+            
             const nameEl = document.getElementById('name');
-
-            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
-            
-            if (s.c && s.c !== 'none') {
-                hero.src = this.imgs[s.c];
-                hero.style.display = 'block';
-            } else {
-                hero.style.display = 'none';
-            }
-
             nameEl.innerText = s.n;
-            document.getElementById('text').innerText = s.t;
-            overlay.style.display = s.hasGame ? 'flex' : 'none';
+            nameEl.style.color = (s.n === "Рассказчик") ? "#888" : "#fc0";
             
-            // Стилизация имен
-            if (s.n === "Рассказчик") {
-                nameEl.style.color = "#888";
-                document.getElementById('text').style.fontStyle = "italic";
-            } else {
-                nameEl.style.color = (s.n === "Дима") ? "#00d4ff" : (s.n === "Гоша") ? "#00ff88" : "#fc0";
-                document.getElementById('text').style.fontStyle = "normal";
-            }
+            document.getElementById('overlay').style.display = s.hasGame ? 'flex' : 'none';
+            this.typeText(document.getElementById('text'), s.t);
         },
         next() {
-            if (this.story[this.idx].hasGame) return;
+            if (this.isTyping || this.story[this.idx].hasGame) return;
             this.idx++;
             if (this.idx >= this.story.length) this.idx = 0;
             this.update();
         },
         tap(e) {
             e.stopPropagation();
-            this.score += 20;
+            this.score += 25;
             document.getElementById('fill').style.width = this.score + '%';
-            if (this.score >= 100) {
-                this.score = 0;
-                this.story[this.idx].hasGame = false;
-                this.next();
-            }
+            if (this.score >= 100) { this.score = 0; this.story[this.idx].hasGame = false; this.next(); }
         }
     };
-
     window.onload = () => game.update();
 </script>
 </body>
