@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 4.1 - Hardcore Edition</title>
+    <title>Sanya Quest V 4.2 - Clean Sprites</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
@@ -11,22 +11,25 @@
         #start-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
 
-        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.4s; }
-        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 2; display: none; pointer-events: none; }
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.4s, filter 0.5s, transform 0.5s; }
+        
+        /* Класс для скрытия персонажей на фоне, когда они выходят отдельным спрайтом */
+        .focus-mode { filter: blur(8px) brightness(0.4); transform: scale(1.05); }
+
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.3s, transform 0.3s; filter: drop-shadow(0 0 20px rgba(0,0,0,0.8)); }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; box-shadow: 0 0 15px #fc0; }
         
-        /* Улучшенные эффекты провала */
-        .fail-state #fill { background: #f00 !important; box-shadow: 0 0 40px #f00 !important; transition: width 1.5s cubic-bezier(0.95, 0.05, 0.795, 0.035) !important; }
+        .fail-state #fill { background: #f00 !important; box-shadow: 0 0 40px #f00 !important; transition: width 1.5s ease-in !important; }
         .red-alert { filter: sepia(1) saturate(5) hue-rotate(-50deg) !important; }
         
         .long-shake { animation: shake 1.8s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake {
             0%, 100% { transform: translate3d(0, 0, 0); }
-            10%, 30%, 50%, 70%, 90% { transform: translate3d(-6px, 0, 0); }
-            20%, 40%, 60%, 80% { transform: translate3d(6px, 0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate3d(-8px, 0, 0); }
+            20%, 40%, 60%, 80% { transform: translate3d(8px, 0, 0); }
         }
 
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
@@ -42,7 +45,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 4.1 - LONG SHAKE & HARD TRAIN</div>
+    <div id="v">V 4.2 - CLEAN SPRITES & BLUR</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -52,13 +55,12 @@
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
-        <div id="scene">
-            <img id="hero" src="" alt="">
-            <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
-                <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
-                <div id="bar-container"><div id="fill"></div></div>
-                <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;"></p>
-            </div>
+        <div id="scene"></div>
+        <img id="hero" src="" alt="">
+        <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
+            <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
+            <div id="bar-container"><div id="fill"></div></div>
+            <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;"></p>
         </div>
         <div id="ui">
             <div id="name">САНЯ</div>
@@ -91,15 +93,15 @@
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', hasGame: "train" },
             { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport' },
             { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути. Он любит её каждой клеткой, но эта любовь давно отравлена неизвестностью.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар тяжелого молота по наковальне его сердца.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях. Но и стоять в стороне сил больше нет.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это медленная, мучительная смерть. Оно требует перемен, требует крика, требует реальных действий. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Облака под крылом самолета кажутся такими же холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди Москва, впереди встреча, которая либо подарит жизнь, либо окончательно его добьет.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути...", b: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив...", b: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это смерть. Оно требует перемен. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди встреча, которая либо подарит жизнь, либо добьет.", b: 'thoughts' },
             { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает изнутри. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
             { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
             { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
@@ -178,14 +180,22 @@
         update() {
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             const s = this.story[this.idx];
-            document.getElementById('scene').style.backgroundImage = `url('${this.imgs[s.b]}')`;
-            
+            const scene = document.getElementById('scene');
             const hero = document.getElementById('hero');
-            if (s.c && s.c !== 'none' && s.hasGame !== "nuggets") {
+            
+            scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
+            
+            // Если есть персонаж на переднем плане - размываем фон
+            if (s.c && s.c !== 'none') {
+                scene.classList.add('focus-mode');
                 hero.src = this.imgs[s.c];
                 hero.style.display = 'block';
+                hero.style.opacity = '1';
+                hero.style.transform = 'translateX(-50%) translateY(0)';
             } else {
-                hero.style.display = 'none';
+                scene.classList.remove('focus-mode');
+                hero.style.opacity = '0';
+                setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
             }
             
             const nameEl = document.getElementById('name');
@@ -212,7 +222,6 @@
             this.stopDrain();
             this.drainInterval = setInterval(() => {
                 if (this.score > 0) {
-                    // УВЕЛИЧЕННАЯ СЛОЖНОСТЬ ДЛЯ ПОЕЗДА (2.5 вместо 1.3)
                     let penalty = (type === "train") ? 2.5 : (1.9 + (this.score / 20));
                     this.score -= penalty;
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
@@ -235,23 +244,20 @@
             const power = (type === "train") ? 9 : 11;
             this.score += power;
             
-            // УДЛИНЕННАЯ ТРЯСКА ПРИ ОБЛОМЕ
             if (type === "nuggets" && this.score >= 90) {
                 this.stopDrain();
                 const overlay = document.getElementById('overlay');
                 const container = document.getElementById('game-container');
-                
                 overlay.classList.add('fail-state');
                 container.classList.add('long-shake', 'red-alert');
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
-                
                 setTimeout(() => {
                     container.classList.remove('long-shake', 'red-alert');
                     overlay.classList.remove('fail-state');
                     this.story[this.idx].hasGame = false;
                     this.next();
-                }, 1800); // 1.8 секунды хаоса
+                }, 1800);
                 return;
             }
 
