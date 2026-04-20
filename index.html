@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        #app { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        #scene { flex: 1; background-size: cover; background-position: center; background-color: #1a1a1a; position: relative; }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80%; display: none; }
+        #ui { height: 35%; background: rgba(0,0,0,0.9); border-top: 2px solid #fc0; padding: 15px; text-align: center; cursor: pointer; }
+        #name { color: #fc0; font-weight: bold; font-size: 20px; margin-bottom: 5px; }
+        #text { font-size: 17px; line-height: 1.2; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
+        #bar { width: 200px; height: 20px; border: 1px solid #fff; margin-top: 10px; }
+        #fill { width: 0%; height: 100%; background: #fc0; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="scene"><img id="hero" src=""></div>
+        <div id="ui" onclick="game.next()">
+            <div id="name">ЗАГРУЗКА</div>
+            <div id="text">Нажми сюда...</div>
+        </div>
+    </div>
+    <div id="overlay" onclick="game.tap()">
+        <h2>ТАПАЙ ТЯГУ!</h2>
+        <div id="bar"><div id="fill"></div></div>
+    </div>
+
+<script>
+    window.onerror = function(m, u, l) { alert('Ошибка: ' + m + ' на строке: ' + l); };
+
+    const game = {
+        idx: 0,
+        score: 0,
+        imgs: {
+            cab: "https://i.ibb.co/TD8nkb1K/1776641277961.png",
+            bars: "https://i.ibb.co/39R0LNDX/1776641464055.png",
+            home: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
+            dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
+            gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png"
+        },
+        story: [
+            { n: "Саня", t: "Последняя смена. Скоро буду в Москве.", c: 'bars', b: 'cab' },
+            { type: 'game' },
+            { n: "Саня", t: "Москва! Пацаны уже ждут.", c: 'bars', b: 'bars' },
+            { n: "Дима", t: "Здорово, Саня! Заждались тебя!", c: 'dima', b: 'bars' },
+            { n: "Гоша", t: "Привет! Идём скорее в бар!", c: 'gosha', b: 'bars' },
+            { n: "У Димы", t: "Хорошо сидим. Пора рассказать про Катю.", c: 'home', b: 'home' }
+        ],
+        update() {
+            const s = this.story[this.idx];
+            if (!s) return;
+            if (s.type === 'game') { document.getElementById('overlay').style.display = 'flex'; return; }
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('scene').style.backgroundImage = "url('" + this.imgs[s.b] + "')";
+            const h = document.getElementById('hero');
+            if (s.b === 'home') { h.style.display = 'none'; } 
+            else { h.src = this.imgs[s.c]; h.style.display = 'block'; }
+            document.getElementById('name').innerText = s.n;
+            document.getElementById('text').innerText = s.t;
+        },
+        next() { if (this.idx < this.story.length - 1) { this.idx++; this.update(); } },
+        tap() { this.score += 20; document.getElementById('fill').style.width = this.score + '%'; if(this.score >= 100) { this.score = 0; this.next(); } }
+    };
+
+    window.onload = () => { game.update(); };
+</script>
+</body>
+</html>
