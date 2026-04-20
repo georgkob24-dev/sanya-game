@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 5.2 - Visible Breathing</title>
+    <title>Sanya Quest V 5.3 - Character Focus</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
-        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; transition: filter 0.3s; }
+        #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
         
         #start-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
         #reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 12px; border-radius: 5px; cursor: pointer; }
 
-        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.4s, filter 0.5s, transform 0.5s; }
-        .focus-mode { filter: blur(8px) brightness(0.4); transform: scale(1.05); }
+        /* Сцена теперь ВСЕГДА статична и не прыгает */
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.6s, filter 0.5s; }
         
+        /* Эффект фокуса теперь только слегка затемняет и блюрит ФОН, но не трогает персонажа */
+        .focus-mode { filter: blur(5px) brightness(0.5); }
+        
+        /* ПЕРСОНАЖ: теперь только ОН дышит и двигается */
         #hero { 
             position: absolute; 
             bottom: 0; 
@@ -24,10 +28,10 @@
             z-index: 5; 
             display: none; 
             pointer-events: none; 
-            transition: opacity 0.4s ease; 
+            transition: opacity 0.5s ease; 
             filter: drop-shadow(0 0 25px rgba(0,0,0,0.9));
             transform-origin: bottom center; 
-            will-change: transform; /* Оптимизация для плавной анимации */
+            will-change: transform;
         }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
@@ -48,39 +52,30 @@
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
 
-        /* --- УСИЛЕННЫЕ АНИМАЦИИ --- */
-        
-        /* Появление: теперь с легким "подскоком" */
-        .hero-enter { animation: hero-enter-anim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        /* АНИМАЦИИ ТОЛЬКО ДЛЯ ПЕРСОНАЖА */
+        .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
         @keyframes hero-enter-anim {
-            from { opacity: 0; transform: translate(-50%, 40px) scale(0.9); }
+            from { opacity: 0; transform: translate(-50%, 40px) scale(0.95); }
             to { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* Усиленное дыхание */
         .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
         @keyframes hero-breathing {
-            0%, 100% { 
-                transform: translate(-50%, 0) scale(1); 
-                filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
-            }
-            50% { 
-                transform: translate(-50%, -12px) scale(1.04, 1.02); /* Выше и объемнее */
-                filter: drop-shadow(0 0 35px rgba(0,0,0,0.6)); /* Тень меняется вместе с движением */
-            }
+            0%, 100% { transform: translate(-50%, 0) scale(1); }
+            50% { transform: translate(-50%, -10px) scale(1.03, 1.01); }
         }
 
-        .shake-quick { animation: shake-quick-anim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        .shake-quick { animation: shake-quick-anim 0.4s both; }
         @keyframes shake-quick-anim {
-            0%, 100% { transform: translate(0, 0); }
-            25%, 75% { transform: translate(-3px, 0); }
-            50% { transform: translate(3px, 0); }
+            0%, 100% { transform: translate(0,0); }
+            25% { transform: translate(-4px, 0); }
+            75% { transform: translate(4px, 0); }
         }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="v">V 5.2 - ENHANCED BREATHING</div>
+    <div id="v">V 5.3 - BREATHING CHARACTERS</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -115,12 +110,19 @@
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null,
         imgs: {
-            morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
-            work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
-            airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
-            thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
-            bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
-            home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
+            // ФОНЫ (Декорации)
+            bg_morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
+            bg_work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
+            bg_airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
+            bg_thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
+            bg_bar: "https://i.ibb.co/39R0LNDX/1776641464055.png",
+            bg_home: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
+            
+            // ПЕРСОНАЖИ (Герои)
+            sanya_morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
+            sanya_work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
+            sanya_airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
+            sanya_plane: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
             dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
@@ -131,25 +133,25 @@
             "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888"
         },
         story: [
-            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning' },
-            { n: "Рассказчик", t: "Сегодня важный день. Куда отправимся первым делом?", b: 'morning', 
+            // Теперь мы указываем b (фон) и c (героя) отдельно!
+            { n: "Саня", t: "Доброе утро, я проснулся...", b: 'bg_morning', c: 'sanya_morning' },
+            { n: "Рассказчик", t: "Сегодня важный день. Куда отправимся первым делом?", b: 'bg_morning', c: 'sanya_morning',
               choices: [
                   { text: "На работу (давить тягу)", nextIdx: 2 },
                   { text: "Сразу в аэропорт", nextIdx: 3 }
               ] 
             },
-            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня!", b: 'work', hasGame: "train" },
-            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport' },
-            { n: "Саня", t: "Гул самолёта убаюкивает. Все мысли только о ней... о Кате.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
-            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
-            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро.", b: 'home_bg', c: 'dima_home' },
-            { n: "Гоша", t: "Правильно Диман говорит! О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Гошан, делись наггетсами давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
-            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
-            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. Продолжение следует...", b: 'home_bg', c: 'none' }
+            { n: "Работа", t: "Так, смена началась. Погнали!", b: 'bg_work', c: 'sanya_work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! Лечу в Москву!", b: 'bg_airport', c: 'sanya_airport' },
+            { n: "Саня", t: "Гул самолёта убаюкивает. Все мысли о Кате.", b: 'bg_thoughts', c: 'sanya_plane' },
+            { n: "Дима", t: "Саня! Брат! Ну ты и вымахал!", b: 'bg_bar', c: 'dima' },
+            { n: "Гоша", t: "Ну что, по первой за приезд?", b: 'bg_bar', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу.", b: 'bg_home', c: 'none' },
+            { n: "Дима", t: "Сань, не держи в себе. Мы с тобой, бро.", b: 'bg_home', c: 'dima_home' },
+            { n: "Гоша", t: "О, доставка как раз вовремя!", b: 'bg_home', c: 'gosha_food' },
+            { n: "Дима", t: "Ха-ха-ха! Гошан, делись!", b: 'bg_home', c: 'dima_home', effect: 'shake-quick' },
+            { n: "Саня", t: "Ну всё, Гоша, в атаку!", b: 'bg_home', c: 'none', hasGame: "nuggets" },
+            { n: "Рассказчик", t: "Продолжение следует...", b: 'bg_home', c: 'none' }
         ],
 
         async init() {
@@ -251,18 +253,19 @@
             scene.classList.remove('shake-quick');
             hero.style.opacity = '';
 
+            // Установка ФОНА (Декорация)
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             const charColor = this.colors[s.n] || "#fff";
             nameEl.style.color = charColor;
             ui.style.borderColor = charColor;
             
+            // Установка ГЕРОЯ (Тот, кто дышит)
             if (s.c && s.c !== 'none') {
-                scene.classList.add('focus-mode');
+                scene.classList.add('focus-mode'); // Фокус только на ФОН
                 if(hero.src !== this.imgs[s.c]) hero.src = this.imgs[s.c];
                 hero.style.display = 'block';
-                // Сначала добавляем вход, потом через микро-паузу idle, чтобы анимации не конфликтовали
                 hero.classList.add('hero-enter');
-                setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 700);
+                setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 800);
             } else {
                 scene.classList.remove('focus-mode');
                 hero.style.opacity = '0';
