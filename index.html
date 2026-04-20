@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 7.5 - Skip Feature</title>
+    <title>Sanya Quest V 7.6 - Balanced Gameplay</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
@@ -29,7 +29,6 @@
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
         
-        /* Кликабельный интерфейс */
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; cursor: pointer; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; pointer-events: none; }
         
@@ -59,7 +58,7 @@
     </style>
 </head>
 <body>
-    <div id="version-tag">V 7.5</div>
+    <div id="version-tag">V 7.6</div>
 
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
@@ -291,8 +290,9 @@
             
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
-                this.gameActive = true; this.score = 30; this.gameStartTime = Date.now();
-                document.getElementById('fill').style.width = '30%';
+                this.gameActive = true; this.score = 40; // Даем чуть больше на старте
+                this.gameStartTime = Date.now();
+                document.getElementById('fill').style.width = '40%';
                 overlay.style.display = 'flex';
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 this.startDrain(s.hasGame);
@@ -308,8 +308,9 @@
             this.stopDrain();
             this.drainInterval = setInterval(() => {
                 if (this.gameActive) {
-                    this.score -= (type === "train") ? 3.5 : 2.0; 
-                    if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 2000)) {
+                    // БАЛАНС: Поезд теперь сливается медленнее (2.2 вместо 3.5)
+                    this.score -= (type === "train") ? 2.2 : 2.0; 
+                    if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 3000)) {
                         this.stopDrain(); this.gameActive = false;
                         document.getElementById('fail-screen').style.display = 'flex';
                     }
@@ -337,7 +338,8 @@
             e.preventDefault();
             if (!this.gameActive) return;
             const type = this.story[this.idx].hasGame;
-            this.score += (type === "train") ? 5.5 : 12;
+            // БАЛАНС: Тап дает больше прогресса (7.5 вместо 5.5)
+            this.score += (type === "train") ? 7.5 : 12;
             if (type === "nuggets" && this.score >= 65) {
                 this.stopDrain(); this.gameActive = false;
                 const container = document.getElementById('game-container');
