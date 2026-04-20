@@ -3,25 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 6.1 - FULL TEXT RESTORED</title>
+    <title>Sanya Quest V 7.0 - Hardcore Edition</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
         
-        #start-screen, #end-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
+        /* Индикатор версии */
+        #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
 
-        .main-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); transition: transform 0.2s; }
-        .main-btn:active { transform: scale(0.95); }
+        /* Экраны */
+        #start-screen, #end-screen, #fail-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
+        #fail-screen { display: none; background: #900; z-index: 2500; }
+
+        .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); }
 
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: background 0.6s, filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
         
-        #hero { 
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; 
-            z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s ease; 
-            filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transform-origin: bottom center;
-        }
+        #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transform-origin: bottom center; }
         
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
@@ -29,7 +29,7 @@
         
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
-        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; }
+        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; }
         #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; }
 
         #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
@@ -44,18 +44,23 @@
         @keyframes hero-breathing { 0%, 100% { transform: translate(-50%, 0) scale(1); } 50% { transform: translate(-50%, -10px) scale(1.02); } }
         .long-shake { animation: shake-anim 0.8s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake-anim { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-15px, 0); } 20%, 40%, 60%, 80% { transform: translate(15px, 0); } }
-        .shake-quick { animation: shake-quick-anim 0.4s both; }
-        @keyframes shake-quick-anim { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-8px, 0); } 75% { transform: translate(8px, 0); } }
         .red-alert { filter: sepia(1) saturate(15) hue-rotate(-50deg) !important; }
         .fail-ui #fill { background: #f00 !important; box-shadow: 0 0 30px #f00; }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
+    <div id="version-tag">V 7.0</div>
+
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
         <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
-        <p style="color: #666; margin-top: 20px; font-size: 12px;">Прогресс сохранен</p>
+    </div>
+
+    <div id="fail-screen">
+        <h1 style="color:#fff; font-size: 32px; margin-bottom: 10px;">СМЕНА ПРОВАЛЕНА</h1>
+        <p style="margin-bottom: 30px;">Саня не вывез нагрузку и завалил график...</p>
+        <button class="main-btn" onclick="game.restartLevel()">ПОПРОБОВАТЬ СНОВА</button>
     </div>
 
     <div id="end-screen">
@@ -87,7 +92,7 @@
     let musicGain = null;
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, 
-        drainInterval: null, gameActive: false,
+        drainInterval: null, gameActive: false, gameStartTime: 0,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -140,10 +145,8 @@
             this.update();
         },
 
-        resetSave() {
-            localStorage.removeItem('sanya_quest_idx');
-            location.reload();
-        },
+        resetSave() { localStorage.removeItem('sanya_quest_idx'); location.reload(); },
+        restartLevel() { document.getElementById('fail-screen').style.display = 'none'; this.update(); },
 
         playClick() {
             if (!audioCtx || this.isMuted) return;
@@ -204,24 +207,18 @@
             const ui = document.getElementById('ui');
             const nameEl = document.getElementById('name');
 
-            hero.className = ''; 
-            scene.className = '';
-            hero.style.opacity = '';
-
+            hero.className = ''; scene.className = ''; hero.style.opacity = '';
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             nameEl.style.color = this.colors[s.n] || "#fff";
             ui.style.borderColor = this.colors[s.n] || "#fc0";
             nameEl.innerText = s.n;
 
             if (s.c && s.c !== 'none') {
-                scene.classList.add('focus-mode');
-                hero.src = this.imgs[s.c];
-                hero.style.display = 'block';
-                hero.classList.add('hero-enter');
+                scene.classList.add('focus-mode'); hero.src = this.imgs[s.c];
+                hero.style.display = 'block'; hero.classList.add('hero-enter');
                 setTimeout(() => { if(hero.classList.contains('hero-enter')) hero.classList.add('hero-idle'); }, 800);
             } else {
-                scene.classList.remove('focus-mode');
-                hero.style.opacity = '0';
+                scene.classList.remove('focus-mode'); hero.style.opacity = '0';
                 setTimeout(() => { if (!this.story[this.idx].c || this.story[this.idx].c === 'none') hero.style.display = 'none'; }, 300);
             }
             
@@ -229,8 +226,9 @@
             
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
-                this.gameActive = true; this.score = 0;
-                document.getElementById('fill').style.width = '0%';
+                this.gameActive = true; this.score = 30; // Начинаем с 30%
+                this.gameStartTime = Date.now();
+                document.getElementById('fill').style.width = '30%';
                 overlay.style.display = 'flex';
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 this.startDrain(s.hasGame);
@@ -243,8 +241,17 @@
         startDrain(type) {
             this.stopDrain();
             this.drainInterval = setInterval(() => {
-                if (this.score > 0) {
-                    this.score -= (type === "train") ? 2.2 : 1.9;
+                if (this.gameActive) {
+                    // ХАРДКОР: В поезде падает быстрее
+                    this.score -= (type === "train") ? 3.5 : 2.0; 
+                    
+                    // Условие поражения для ПОЕЗДА
+                    if (type === "train" && this.score <= 0 && (Date.now() - this.gameStartTime > 2000)) {
+                        this.stopDrain();
+                        this.gameActive = false;
+                        document.getElementById('fail-screen').style.display = 'flex';
+                    }
+
                     document.getElementById('fill').style.width = Math.max(0, this.score) + '%';
                 }
             }, 100);
@@ -254,12 +261,8 @@
 
         next() { 
             if (this.isTyping || this.gameActive) return;
-            if (this.idx < this.story.length - 1) {
-                this.idx++; 
-                this.update(); 
-            } else {
-                document.getElementById('end-screen').style.display = 'flex';
-            }
+            if (this.idx < this.story.length - 1) { this.idx++; this.update(); } 
+            else { document.getElementById('end-screen').style.display = 'flex'; }
         },
         
         prev() { if (!this.isTyping && this.idx > 0) { this.idx--; this.update(); } },
@@ -268,7 +271,8 @@
             e.preventDefault();
             if (!this.gameActive) return;
             const type = this.story[this.idx].hasGame;
-            this.score += (type === "train") ? 9 : 12;
+            // ХАРДКОР: В поезде клик дает меньше (6 вместо 12)
+            this.score += (type === "train") ? 5.5 : 12;
 
             if (type === "nuggets" && this.score >= 65) {
                 this.stopDrain(); this.gameActive = false;
