@@ -3,34 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.2 - Lofi Edition</title>
+    <title>Sanya Quest V 2.3 - Bug Fix</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
-        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; z-index: 1; transition: background 0.5s; }
+        #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; z-index: 1; }
         #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 2; display: none; pointer-events: none; }
+        
+        /* Слой мини-игры - теперь с гарантированным кликом */
+        #overlay { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 500; cursor: pointer;
+        }
+        
+        #bar-container { width: 70%; height: 30px; border: 2px solid #fff; border-radius: 15px; overflow: hidden; margin-top: 20px; pointer-events: none; }
+        #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.1s; }
+
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 2px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background: rgba(0,0,0,0.6); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
-        #bar-container { width: 70%; height: 20px; border: 1px solid #fff; border-radius: 5px; overflow: hidden; margin-top: 10px; }
-        #fill { width: 0%; height: 100%; background: #fc0; }
         #name { color: #fc0; font-weight: bold; font-size: 20px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
         #text { font-size: 17px; line-height: 1.5; color: #ddd; min-height: 4.5em; }
         
-        /* Кнопка звука */
-        #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; opacity: 0.7; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid #fc0; }
+        #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.6); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: 1px solid #fc0; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
     </style>
 </head>
 <body>
-    <div id="v">V 2.2 - LOFI MUSIC</div>
+    <div id="v">V 2.3 - FIXED TAPS</div>
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
         <div id="scene">
             <img id="hero" src="" alt="">
             <div id="overlay" onclick="game.tap(event)">
-                <h2 style="margin:0; color:#fc0; font-size: 18px;">ДАВИ ТЯГУ!</h2>
+                <h2 style="margin:0; color:#fc0; font-size: 24px; text-shadow: 0 0 10px #000;">ДАВИ ТЯГУ!</h2>
                 <div id="bar-container"><div id="fill"></div></div>
+                <p style="color: #fff; margin-top: 15px; font-weight: bold;">ТАПАЙ БЫСТРЕЕ!</p>
             </div>
         </div>
         <div id="ui" onclick="game.next()">
@@ -43,22 +52,19 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicGain = audioCtx.createGain();
     musicGain.connect(audioCtx.destination);
-    musicGain.gain.value = 0.15; // Громкость музыки
+    musicGain.gain.value = 0.12;
 
-    // 8-битный звук печати
     function playRetroClick() {
         if (game.isMuted) return;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(200 + Math.random() * 100, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.03);
     }
 
-    // Ламповый синтезатор музыки
     function playMusicStep(time, freq, dur) {
         if (game.isMuted) return;
         const osc = audioCtx.createOscillator();
@@ -66,14 +72,14 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time);
         g.gain.setValueAtTime(0, time);
-        g.gain.linearRampToValueAtTime(0.1, time + 0.1);
+        g.gain.linearRampToValueAtTime(0.08, time + 0.1);
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc.connect(g); g.connect(musicGain);
         osc.start(time); osc.stop(time + dur);
     }
 
     const game = {
-        idx: 0, isTyping: false, isMuted: false, musicStarted: false,
+        idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -90,36 +96,30 @@
             { n: "Саня", t: "Фух, наконец-то отпуск в РЖД! На билеты накопил. Лечу в Москву!", b: 'airport' },
             { n: "Саня", t: "Гул самолёта убаюкивает, но я не могу уснуть. Все мысли только о ней... о Кате.", b: 'thoughts' },
             { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Но боль становится невыносимой.", b: 'thoughts' },
-            { n: "Дима", t: "Саня! Брат! Ты посмотри на этого столичного пижона! Здорово!", b: 'bar_bg', c: 'dima' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался из своего Орска!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
             { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Я люблю её. Но я будто в зале ожидания застрял.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, мы же всё видим. Ты в себе это не держи. Мы с тобой в любой замес.", b: 'home_bg', c: 'none' },
-            { n: "Гоша", t: "Правильно Диман говорит. А сейчас — давай за тебя, за твой отпуск!", b: 'home_bg', c: 'none' },
-            { n: "Рассказчик", t: "Тяжесть начала понемногу отпускать. Начиналось настоящее веселье.", b: 'home_bg', c: 'none' },
-            { n: "Система", t: "Продолжение следует...", b: 'home_bg', c: 'none' }
+            { n: "Рассказчик", t: "Начиналось настоящее веселье. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
         
         startMusic() {
             if (this.musicStarted) return;
             this.musicStarted = true;
             let step = 0;
-            const melody = [196, 220, 246, 261, 196, 220, 164, 146]; // Ноты в Герцах
+            const melody = [196, 220, 246, 261, 196, 220, 164, 146];
             setInterval(() => {
                 if (this.isMuted) return;
                 playMusicStep(audioCtx.currentTime, melody[step % melody.length] / 2, 2.5);
-                if (step % 2 === 0) playMusicStep(audioCtx.currentTime + 0.5, melody[(step + 2) % melody.length], 1.5);
                 step++;
-            }, 1500);
+            }, 1200);
         },
 
         toggleMusic(e) {
             e.stopPropagation();
             this.isMuted = !this.isMuted;
             document.getElementById('sound-btn').innerText = this.isMuted ? "🔇" : "🔊";
-            if (!this.isMuted && audioCtx.state === 'suspended') audioCtx.resume();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         },
 
         typeText(element, text) {
@@ -158,10 +158,21 @@
         },
 
         tap(e) {
+            e.preventDefault();
             e.stopPropagation();
-            this.score += 25;
-            document.getElementById('fill').style.width = this.score + '%';
-            if (this.score >= 100) { this.score = 0; this.story[this.idx].hasGame = false; this.next(); }
+            if (!this.story[this.idx].hasGame) return;
+
+            this.score += 15; // Сила одного тапа
+            const fill = document.getElementById('fill');
+            fill.style.width = this.score + '%';
+
+            if (this.score >= 100) {
+                this.score = 0;
+                fill.style.width = '0%';
+                this.story[this.idx].hasGame = false;
+                document.getElementById('overlay').style.display = 'none';
+                this.next();
+            }
         }
     };
     window.onload = () => game.update();
