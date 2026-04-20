@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 7.3 - Branching Paths</title>
+    <title>Sanya Quest V 7.5 - Skip Feature</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
@@ -29,18 +29,18 @@
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
         
-        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; }
-        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; }
+        /* Кликабельный интерфейс */
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; cursor: pointer; }
+        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; pointer-events: none; }
         
-        #choice-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 110; }
-        .choice-btn { background: #222; color: #fc0; border: 1px solid #fc0; padding: 12px 20px; margin: 8px; width: 85%; border-radius: 5px; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        .choice-btn:active { background: #fc0; color: #000; }
+        #choice-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 110; cursor: default; }
+        .choice-btn { background: #222; color: #fc0; border: 1px solid #fc0; padding: 12px 20px; margin: 8px; width: 85%; border-radius: 5px; font-size: 16px; cursor: pointer; }
 
-        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; }
-        #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; }
+        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
+        #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
 
-        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-        #text { font-size: 17px; line-height: 1.4; color: #eee; }
+        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; }
+        #text { font-size: 17px; line-height: 1.4; color: #eee; pointer-events: none; }
         
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 3000; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 
@@ -59,7 +59,7 @@
     </style>
 </head>
 <body>
-    <div id="version-tag">V 7.3</div>
+    <div id="version-tag">V 7.5</div>
 
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
@@ -69,7 +69,6 @@
 
     <div id="fail-screen">
         <h1 style="color:#fff; font-size: 32px; margin-bottom: 10px;">СМЕНА ПРОВАЛЕНА</h1>
-        <p style="margin-bottom: 30px;">Саня не вывез нагрузку и завалил график...</p>
         <button class="main-btn" onclick="game.restartLevel()">ПОПРОБОВАТЬ СНОВА</button>
     </div>
 
@@ -84,17 +83,17 @@
         <div id="fade-layer"></div>
         <div id="scene"></div>
         <img id="hero" src="" alt="">
-        <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
+        <div id="overlay" onmousedown="game.tap(event)">
             <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
             <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
-        <div id="ui">
+        <div id="ui" onclick="game.handleUiClick()">
             <div id="choice-container"></div>
             <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
-            <button id="prev-btn" onclick="game.prev()">←</button>
-            <button id="next-btn" onclick="game.next()">ПРОДОЛЖИТЬ →</button>
+            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">←</button>
+            <button id="next-btn" onclick="event.stopPropagation(); game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
 
@@ -104,7 +103,7 @@
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, 
         drainInterval: null, gameActive: false, gameStartTime: 0,
-        tempText: null, // Для хранения временных реплик от выбора
+        tempText: null, currentFullText: "", currentShake: false,
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -116,7 +115,7 @@
             dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
-            gosha_troll: "https://i.ibb.co/jPHM7bj/photo-2026-04-20-16-06-59.jpg"
+            gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg"
         },
         colors: { "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888" },
         story: [
@@ -193,6 +192,7 @@
 
         typeText(element, text, shake) {
             let i = 0; element.innerHTML = ""; this.isTyping = true;
+            this.currentFullText = text; this.currentShake = shake;
             element.className = shake ? "shake-text" : "";
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('prev-btn').style.display = 'none';
@@ -203,15 +203,30 @@
                     if (text.charAt(i) !== " ") this.playClick();
                     i++;
                 } else { 
-                    clearInterval(this.textTimer); this.isTyping = false;
-                    this.showPostTypingUI();
+                    this.finishTyping();
                 }
             }, 30);
         },
 
+        finishTyping() {
+            clearInterval(this.textTimer);
+            this.isTyping = false;
+            document.getElementById('text').innerHTML = this.currentFullText;
+            document.getElementById('text').className = this.currentShake ? "shake-text" : "";
+            this.showPostTypingUI();
+        },
+
+        handleUiClick() {
+            if (this.isTyping) {
+                this.finishTyping();
+            } else if (!this.gameActive && document.getElementById('choice-container').style.display !== 'flex') {
+                this.next();
+            }
+        },
+
         showPostTypingUI() {
             const s = this.story[this.idx];
-            if (this.tempText) { // Если мы показывали текст выбора
+            if (this.tempText) {
                 document.getElementById('next-btn').style.display = 'block';
             } else if (s.choices && !this.gameActive) {
                 this.showChoices(s.choices);
@@ -227,7 +242,7 @@
             choices.forEach(c => {
                 const b = document.createElement('button');
                 b.className = 'choice-btn'; b.innerText = c;
-                b.onclick = () => this.makeChoice(c);
+                b.onclick = (e) => { e.stopPropagation(); this.makeChoice(c); };
                 container.appendChild(b);
             });
             container.style.display = 'flex';
@@ -240,7 +255,7 @@
             } else if (choice === "Отшутиться") {
                 this.tempText = "Я попытался улыбнуться: 'Да ладно вам, пацаны, я просто в депо переутомился!'. Но Диман только прищурился, а Гоша перестал жевать. Скрывать правду дальше было бессмысленно.";
             } else {
-                this.next(); return; // Для прямых выборов просто идем дальше
+                this.next(); return;
             }
             this.typeText(document.getElementById('text'), this.tempText);
         },
@@ -279,6 +294,7 @@
                 this.gameActive = true; this.score = 30; this.gameStartTime = Date.now();
                 document.getElementById('fill').style.width = '30%';
                 overlay.style.display = 'flex';
+                document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 this.startDrain(s.hasGame);
             } else {
                 this.gameActive = false; overlay.style.display = 'none'; this.stopDrain();
@@ -306,7 +322,7 @@
 
         next() { 
             if (this.isTyping || this.gameActive || document.getElementById('choice-container').style.display === 'flex') return;
-            if (this.tempText) { // Если закончили читать текст выбора - возвращаемся к основному сюжету
+            if (this.tempText) {
                 this.tempText = null;
                 if (this.idx < this.story.length - 1) { this.idx++; this.update(); }
             } else {
