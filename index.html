@@ -3,34 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.5 - Audio Balance</title>
+    <title>Sanya Quest V 2.6 - Deep Drama</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; z-index: 1; }
         #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 2; display: none; pointer-events: none; }
-        
-        #overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); display: none; 
-            flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 500; cursor: pointer; user-select: none;
-        }
-        
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 500; cursor: pointer; user-select: none; }
         #bar-container { width: 70%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; pointer-events: none; }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.1s; }
-
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
         #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
         #text { font-size: 19px; line-height: 1.5; color: #eee; min-height: 4.5em; }
-        
         #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.8); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 2px solid #fc0; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
         @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
     </style>
 </head>
 <body>
-    <div id="v">V 2.5 - MIXER FIX</div>
+    <div id="v">V 2.6 - DRAMA RESTORED</div>
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
@@ -52,17 +43,18 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicGain = audioCtx.createGain();
     musicGain.connect(audioCtx.destination);
-    musicGain.gain.value = 0.4; // Музыка на прежней громкости
+    musicGain.gain.value = 0.4;
 
     function playRetroClick() {
         if (game.isMuted) return;
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const g = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(280, audioCtx.currentTime);
-        // Громкость шрифта снижена (0.12 против 0.4 музыки)
-        gain.gain.setValueAtTime(0.12, audioCtx.currentTime); 
-        osc.connect(gain); gain.connect(audioCtx.destination);
+        // Исправлено "троение": резкое затухание в конце каждой буквы
+        g.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.03);
+        osc.connect(g); g.connect(audioCtx.destination);
         osc.start(); osc.stop(audioCtx.currentTime + 0.04);
     }
 
@@ -73,7 +65,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time);
         g.gain.setValueAtTime(0, time);
-        g.gain.linearRampToValueAtTime(0.25, time + 0.1); 
+        g.gain.linearRampToValueAtTime(0.25, time + 0.1);
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc.connect(g); g.connect(musicGain);
         osc.start(time); osc.stop(time + dur);
@@ -95,13 +87,18 @@
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город.", b: 'morning' },
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу!", b: 'work', hasGame: true },
             { n: "Саня", t: "Фух, наконец-то отпуск в РЖД! На билеты накопил. Лечу в Москву!", b: 'airport' },
+            // ВОССТАНОВЛЕННЫЙ БЛОК
             { n: "Саня", t: "Гул самолёта убаюкивает, но я не могу уснуть. Все мысли только о ней... о Кате.", b: 'thoughts' },
-            { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается бездна. Любовь к Кате — это не тихая гавань, а шторм, который выжигает всё живое. Он любит её каждой клеткой, но эта любовь отравлена неизвестностью.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив. Каждая минута молчания в чате — как удар молота по наковальне сердца.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, там всё трещит по швам, но он — человек чести. Он не хочет врываться в чужую крепость, даже если ворота едва держатся на петлях.", b: 'thoughts' },
+            { n: "Рассказчик", t: "Но боль становится невыносимой. Сердце кричит, что тишина — это медленная смерть. Оно требует перемен, требует крика, требует действий. Он устал быть просто 'другом из Орска'.", b: 'thoughts' },
+            // КОНЕЦ БЛОКА
             { n: "Дима", t: "Саня! Брат! Здорово! Наконец-то ты выбрался из своего Орска!", b: 'bar_bg', c: 'dima' },
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь опустилась на Москву. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
-            { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает.", b: 'home_bg', c: 'none' },
-            { n: "Рассказчик", t: "Начиналось настоящее веселье. Продолжение следует...", b: 'home_bg', c: 'none' }
+            { n: "Саня", t: "Пацаны... я должен вам рассказать. Меня эта ситуация с Катей просто уничтожает. Я люблю её.", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Тяжесть начала понемногу отпускать. Начиналось настоящее веселье. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
         
         startMusic() {
@@ -137,16 +134,13 @@
         update() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             if (!this.musicStarted) this.startMusic();
-            
             const s = this.story[this.idx];
             document.getElementById('scene').style.backgroundImage = `url('${this.imgs[s.b]}')`;
             const hero = document.getElementById('hero');
             if (s.c && s.c !== 'none') { hero.src = this.imgs[s.c]; hero.style.display = 'block'; } else { hero.style.display = 'none'; }
-            
             const nameEl = document.getElementById('name');
             nameEl.innerText = s.n;
             nameEl.style.color = (s.n === "Рассказчик") ? "#888" : "#fc0";
-            
             document.getElementById('overlay').style.display = s.hasGame ? 'flex' : 'none';
             this.typeText(document.getElementById('text'), s.t);
         },
@@ -163,11 +157,9 @@
             if (e.type === 'mousedown' && e.button !== 0) return;
             e.preventDefault(); e.stopPropagation();
             if (!this.story[this.idx].hasGame) return;
-
             this.score += 20; 
             const fill = document.getElementById('fill');
             fill.style.width = this.score + '%';
-
             if (this.score >= 100) {
                 this.score = 0;
                 fill.style.width = '0%';
