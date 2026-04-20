@@ -3,43 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 2.3 - Bug Fix</title>
+    <title>Sanya Quest V 2.5 - Audio Balance</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: flex; flex-direction: column; width: 100vw; height: 100vh; position: relative; }
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; z-index: 1; }
         #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 2; display: none; pointer-events: none; }
         
-        /* Слой мини-игры - теперь с гарантированным кликом */
         #overlay { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.7); display: none; 
+            background: rgba(0,0,0,0.8); display: none; 
             flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 500; cursor: pointer;
+            z-index: 500; cursor: pointer; user-select: none;
         }
         
-        #bar-container { width: 70%; height: 30px; border: 2px solid #fff; border-radius: 15px; overflow: hidden; margin-top: 20px; pointer-events: none; }
+        #bar-container { width: 70%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; pointer-events: none; }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.1s; }
 
-        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 2px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
-        #name { color: #fc0; font-weight: bold; font-size: 20px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
-        #text { font-size: 17px; line-height: 1.5; color: #ddd; min-height: 4.5em; }
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; z-index: 10; box-sizing: border-box; padding: 25px; }
+        #name { color: #fc0; font-weight: bold; font-size: 22px; margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
+        #text { font-size: 19px; line-height: 1.5; color: #eee; min-height: 4.5em; }
         
-        #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.6); border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border: 1px solid #fc0; }
+        #sound-btn { position: fixed; top: 15px; left: 15px; z-index: 1001; font-size: 24px; cursor: pointer; background: rgba(0,0,0,0.8); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border: 2px solid #fc0; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 10px; color: #444; z-index: 1000; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.3;} 100% {opacity: 1;} }
     </style>
 </head>
 <body>
-    <div id="v">V 2.3 - FIXED TAPS</div>
+    <div id="v">V 2.5 - MIXER FIX</div>
     <div id="sound-btn" onclick="game.toggleMusic(event)">🔊</div>
 
     <div id="game-container">
         <div id="scene">
             <img id="hero" src="" alt="">
-            <div id="overlay" onclick="game.tap(event)">
-                <h2 style="margin:0; color:#fc0; font-size: 24px; text-shadow: 0 0 10px #000;">ДАВИ ТЯГУ!</h2>
+            <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
+                <h2 style="margin:0; color:#fc0; font-size: 28px; text-shadow: 0 0 15px #fc0;">ДАВИ ТЯГУ!</h2>
                 <div id="bar-container"><div id="fill"></div></div>
-                <p style="color: #fff; margin-top: 15px; font-weight: bold;">ТАПАЙ БЫСТРЕЕ!</p>
+                <p style="color: #fff; margin-top: 20px; font-size: 18px; font-weight: bold; animation: blink 1s infinite;">КЛИКАЙ!</p>
             </div>
         </div>
         <div id="ui" onclick="game.next()">
@@ -52,17 +52,18 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let musicGain = audioCtx.createGain();
     musicGain.connect(audioCtx.destination);
-    musicGain.gain.value = 0.12;
+    musicGain.gain.value = 0.4; // Музыка на прежней громкости
 
     function playRetroClick() {
         if (game.isMuted) return;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(250, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+        // Громкость шрифта снижена (0.12 против 0.4 музыки)
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime); 
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.03);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.04);
     }
 
     function playMusicStep(time, freq, dur) {
@@ -72,7 +73,7 @@
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(freq, time);
         g.gain.setValueAtTime(0, time);
-        g.gain.linearRampToValueAtTime(0.08, time + 0.1);
+        g.gain.linearRampToValueAtTime(0.25, time + 0.1); 
         g.gain.exponentialRampToValueAtTime(0.001, time + dur);
         osc.connect(g); g.connect(musicGain);
         osc.start(time); osc.stop(time + dur);
@@ -151,6 +152,7 @@
         },
 
         next() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             if (this.isTyping || this.story[this.idx].hasGame) return;
             this.idx++;
             if (this.idx >= this.story.length) this.idx = 0;
@@ -158,11 +160,11 @@
         },
 
         tap(e) {
-            e.preventDefault();
-            e.stopPropagation();
+            if (e.type === 'mousedown' && e.button !== 0) return;
+            e.preventDefault(); e.stopPropagation();
             if (!this.story[this.idx].hasGame) return;
 
-            this.score += 15; // Сила одного тапа
+            this.score += 20; 
             const fill = document.getElementById('fill');
             fill.style.width = this.score + '%';
 
