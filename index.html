@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 5.3 - Character Focus</title>
+    <title>Sanya Quest V 5.4 - Restoration</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
@@ -12,13 +12,9 @@
         #start-btn { background: #fc0; color: #000; border: none; padding: 25px 60px; font-weight: bold; font-size: 22px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
         #reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 12px; border-radius: 5px; cursor: pointer; }
 
-        /* Сцена теперь ВСЕГДА статична и не прыгает */
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; background-color: #1a1a1a; z-index: 1; transition: background 0.6s, filter 0.5s; }
+        .focus-mode { filter: blur(5px) brightness(0.4); }
         
-        /* Эффект фокуса теперь только слегка затемняет и блюрит ФОН, но не трогает персонажа */
-        .focus-mode { filter: blur(5px) brightness(0.5); }
-        
-        /* ПЕРСОНАЖ: теперь только ОН дышит и двигается */
         #hero { 
             position: absolute; 
             bottom: 0; 
@@ -42,40 +38,34 @@
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
         
-        #choices-container { display: none; flex-direction: column; gap: 10px; margin-top: 10px; padding-bottom: 20px; }
-        .choice-btn { background: #222; color: #fff; border: 1px solid #fc0; padding: 12px; border-radius: 8px; cursor: pointer; text-align: center; transition: background 0.2s; font-size: 15px; }
-        .choice-btn:hover { background: #333; }
-
         #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.4s; }
         #text { font-size: 17px; line-height: 1.4; color: #eee; }
         
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 1001; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
         #v { position: fixed; top: 5px; right: 5px; font-size: 9px; color: #444; z-index: 1000; }
 
-        /* АНИМАЦИИ ТОЛЬКО ДЛЯ ПЕРСОНАЖА */
+        /* АНИМАЦИИ */
         .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
         @keyframes hero-enter-anim {
             from { opacity: 0; transform: translate(-50%, 40px) scale(0.95); }
             to { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
-
         .hero-idle { animation: hero-breathing 3.5s ease-in-out infinite; }
         @keyframes hero-breathing {
             0%, 100% { transform: translate(-50%, 0) scale(1); }
-            50% { transform: translate(-50%, -10px) scale(1.03, 1.01); }
+            50% { transform: translate(-50%, -12px) scale(1.04, 1.02); }
         }
-
         .shake-quick { animation: shake-quick-anim 0.4s both; }
         @keyframes shake-quick-anim {
             0%, 100% { transform: translate(0,0); }
-            25% { transform: translate(-4px, 0); }
-            75% { transform: translate(4px, 0); }
+            25% { transform: translate(-6px, 0); }
+            75% { transform: translate(6px, 0); }
         }
         @keyframes blink { 0%, 100% {opacity: 1;} 50% {opacity: 0.3;} }
     </style>
 </head>
 <body>
-    <div id="v">V 5.3 - BREATHING CHARACTERS</div>
+    <div id="v">V 5.4 - FULL STORY RESTORED</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -87,19 +77,14 @@
     <div id="game-container">
         <div id="scene"></div>
         <img id="hero" src="" alt="">
-        
         <div id="overlay" onmousedown="game.tap(event)" onclick="game.tap(event)">
             <h2 id="game-title" style="margin:0; color:#fc0;"></h2>
             <div id="bar-container"><div id="fill"></div></div>
             <p id="game-hint" style="color: #fff; margin-top: 15px; font-weight: bold; animation: blink 0.8s infinite;">ЖМИ БЫСТРЕЕ!</p>
         </div>
-
         <div id="ui">
             <div id="name">САНЯ</div>
-            <div id="text-area">
-                <div id="text"></div>
-                <div id="choices-container"></div>
-            </div>
+            <div id="text-area"><div id="text"></div></div>
             <button id="next-btn" onclick="game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
@@ -110,19 +95,12 @@
     const game = {
         idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null,
         imgs: {
-            // ФОНЫ (Декорации)
-            bg_morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
-            bg_work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
-            bg_airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
-            bg_thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
-            bg_bar: "https://i.ibb.co/39R0LNDX/1776641464055.png",
-            bg_home: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
-            
-            // ПЕРСОНАЖИ (Герои)
-            sanya_morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
-            sanya_work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
-            sanya_airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
-            sanya_plane: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
+            morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
+            work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
+            airport: "https://i.ibb.co/rKHRdknD/photo-2026-04-20-12-34-59.jpg",
+            thoughts: "https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg",
+            bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
+            home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
             dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
             gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
@@ -133,31 +111,31 @@
             "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", "Работа": "#fc0", "Рассказчик": "#888"
         },
         story: [
-            // Теперь мы указываем b (фон) и c (героя) отдельно!
-            { n: "Саня", t: "Доброе утро, я проснулся...", b: 'bg_morning', c: 'sanya_morning' },
-            { n: "Рассказчик", t: "Сегодня важный день. Куда отправимся первым делом?", b: 'bg_morning', c: 'sanya_morning',
-              choices: [
-                  { text: "На работу (давить тягу)", nextIdx: 2 },
-                  { text: "Сразу в аэропорт", nextIdx: 3 }
-              ] 
-            },
-            { n: "Работа", t: "Так, смена началась. Погнали!", b: 'bg_work', c: 'sanya_work', hasGame: "train" },
-            { n: "Саня", t: "Фух, наконец-то отпуск! Лечу в Москву!", b: 'bg_airport', c: 'sanya_airport' },
-            { n: "Саня", t: "Гул самолёта убаюкивает. Все мысли о Кате.", b: 'bg_thoughts', c: 'sanya_plane' },
-            { n: "Дима", t: "Саня! Брат! Ну ты и вымахал!", b: 'bg_bar', c: 'dima' },
-            { n: "Гоша", t: "Ну что, по первой за приезд?", b: 'bg_bar', c: 'gosha' },
-            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу.", b: 'bg_home', c: 'none' },
-            { n: "Дима", t: "Сань, не держи в себе. Мы с тобой, бро.", b: 'bg_home', c: 'dima_home' },
-            { n: "Гоша", t: "О, доставка как раз вовремя!", b: 'bg_home', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Гошан, делись!", b: 'bg_home', c: 'dima_home', effect: 'shake-quick' },
-            { n: "Саня", t: "Ну всё, Гоша, в атаку!", b: 'bg_home', c: 'none', hasGame: "nuggets" },
-            { n: "Рассказчик", t: "Продолжение следует...", b: 'bg_home', c: 'none' }
+            { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
+            { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
+            { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
+            { n: "Саня", t: "Гул самолёта должен бы убаюкивать, но я не могу сомкнуть глаз. Все мысли только о ней... о Кате.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Внутри него разверзается настоящая бездна. Любовь к Кате — это не тихая гавань, а яростный шторм, который выжигает всё живое на своем пути...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Взаимно ли это? Или он лишь удобная тень в её жизни? Эта неопределённость грызет его изнутри, словно ржавчина старый локомотив...", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Саня знает: у неё есть парень. Там всё сложно, но он — человек чести. Он не хочет врываться в чужую крепость, но и стоять в стороне сил нет.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Боль становится невыносимой. Сердце в груди кричит, что тишина — это смерть. Оно требует перемен. Он чертовски устал быть просто 'хорошим другом из Орска'.", b: 'thoughts', c: 'thoughts' },
+            { n: "Рассказчик", t: "Облака под крылом самолета кажутся холодными, как его страх услышать 'нет'. Но отступать некуда. Впереди встреча, которая либо подарит жизнь, либо добьет.", b: 'thoughts', c: 'thoughts' },
+            { n: "Дима", t: "Саня! Брат! Здорово! Ну ты и вымахал! Наконец-то ты выбрался из своего депо!", b: 'bar_bg', c: 'dima' },
+            { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
+            { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро, в любой замес пойдем. Твои проблемы — это наши проблемы.", b: 'home_bg', c: 'dima_home' },
+            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал! У меня диета!", b: 'home_bg', c: 'gosha_food' },
+            { n: "Дима", t: "Ха-ха-ха! Вы слышали? 'На одного'! Гошан, хорош заливать, делись давай, гость в доме!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
+            { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets" },
+            { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои! Глотайте слюнки!", b: 'home_bg', c: 'gosha_troll' },
+            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. С такими друзьями любая бездна кажется чуть мельче. Продолжение следует...", b: 'home_bg', c: 'none' }
         ],
 
         async init() {
             const savedIdx = localStorage.getItem('sanya_quest_idx');
             if (savedIdx !== null) this.idx = parseInt(savedIdx);
-
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 musicGain = audioCtx.createGain();
@@ -204,11 +182,7 @@
 
         typeText(element, text) {
             let i = 0; element.innerHTML = ""; this.isTyping = true;
-            const nextBtn = document.getElementById('next-btn');
-            const choicesEl = document.getElementById('choices-container');
-            nextBtn.style.display = 'none';
-            choicesEl.style.display = 'none';
-
+            document.getElementById('next-btn').style.display = 'none';
             if (this.textTimer) clearInterval(this.textTimer);
             this.textTimer = setInterval(() => {
                 if (i < text.length) {
@@ -216,29 +190,9 @@
                     i++;
                 } else { 
                     clearInterval(this.textTimer); this.isTyping = false;
-                    this.showPostTextUI();
+                    if (!this.story[this.idx].hasGame) document.getElementById('next-btn').style.display = 'block';
                 }
             }, 30);
-        },
-
-        showPostTextUI() {
-            const s = this.story[this.idx];
-            const nextBtn = document.getElementById('next-btn');
-            const choicesEl = document.getElementById('choices-container');
-
-            if (s.choices) {
-                choicesEl.innerHTML = "";
-                s.choices.forEach(c => {
-                    const btn = document.createElement('div');
-                    btn.className = "choice-btn";
-                    btn.innerText = c.text;
-                    btn.onclick = () => { this.idx = c.nextIdx; this.update(); };
-                    choicesEl.appendChild(btn);
-                });
-                choicesEl.style.display = 'flex';
-            } else if (!s.hasGame) {
-                nextBtn.style.display = 'block';
-            }
         },
         
         update() {
@@ -253,15 +207,13 @@
             scene.classList.remove('shake-quick');
             hero.style.opacity = '';
 
-            // Установка ФОНА (Декорация)
             scene.style.backgroundImage = `url('${this.imgs[s.b]}')`;
             const charColor = this.colors[s.n] || "#fff";
             nameEl.style.color = charColor;
             ui.style.borderColor = charColor;
             
-            // Установка ГЕРОЯ (Тот, кто дышит)
             if (s.c && s.c !== 'none') {
-                scene.classList.add('focus-mode'); // Фокус только на ФОН
+                scene.classList.add('focus-mode');
                 if(hero.src !== this.imgs[s.c]) hero.src = this.imgs[s.c];
                 hero.style.display = 'block';
                 hero.classList.add('hero-enter');
@@ -273,7 +225,6 @@
             }
             
             if (s.effect === 'shake-quick') scene.classList.add('shake-quick');
-
             nameEl.innerText = s.n;
             
             const overlay = document.getElementById('overlay');
@@ -303,7 +254,7 @@
         stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
 
         next() {
-            if (this.isTyping || this.story[this.idx].hasGame || this.story[this.idx].choices) return;
+            if (this.isTyping || this.story[this.idx].hasGame) return;
             this.idx = (this.idx + 1) % this.story.length;
             this.update();
         },
