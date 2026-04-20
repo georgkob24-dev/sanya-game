@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 5.4 - Restoration</title>
+    <title>Sanya Quest V 5.6 - Bugfix & Stability</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #111; }
@@ -36,8 +36,10 @@
         
         #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; transition: border-color 0.4s; }
         #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; }
-        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
         
+        #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
+        #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; font-size: 16px; z-index: 110; }
+
         #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.4s; }
         #text { font-size: 17px; line-height: 1.4; color: #eee; }
         
@@ -65,7 +67,7 @@
     </style>
 </head>
 <body>
-    <div id="v">V 5.4 - FULL STORY RESTORED</div>
+    <div id="v">V 5.6 - STABLE FIX</div>
     
     <div id="start-screen">
         <h1 style="color:#fc0; font-size: 40px;">SANYA QUEST</h1>
@@ -85,6 +87,7 @@
         <div id="ui">
             <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
+            <button id="prev-btn" onclick="game.prev()">←</button>
             <button id="next-btn" onclick="game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
@@ -93,7 +96,8 @@
     let audioCtx = null;
     let musicGain = null;
     const game = {
-        idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, drainInterval: null,
+        idx: 0, score: 0, isTyping: false, isMuted: false, musicStarted: false, 
+        drainInterval: null, gameActive: false, // Флаг активности игры
         imgs: {
             morning: "https://i.ibb.co/CNb9jhK/Gemini-Generated-Image-jgx79tjgx79tjgx7.png",
             work: "https://i.ibb.co/W7XwXnJ/Gemini-Generated-Image-eemupteemupteemu.png",
@@ -140,7 +144,7 @@
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 musicGain = audioCtx.createGain();
                 musicGain.connect(audioCtx.destination);
-                musicGain.gain.value = 0.4;
+                musicGain.gain.value = 1.0; 
                 if (audioCtx.state === 'suspended') await audioCtx.resume();
                 this.startMusic();
             } catch(e) {}
@@ -183,6 +187,7 @@
         typeText(element, text) {
             let i = 0; element.innerHTML = ""; this.isTyping = true;
             document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('prev-btn').style.display = 'none';
             if (this.textTimer) clearInterval(this.textTimer);
             this.textTimer = setInterval(() => {
                 if (i < text.length) {
@@ -190,9 +195,16 @@
                     i++;
                 } else { 
                     clearInterval(this.textTimer); this.isTyping = false;
-                    if (!this.story[this.idx].hasGame) document.getElementById('next-btn').style.display = 'block';
+                    this.showNav();
                 }
             }, 30);
+        },
+
+        showNav() {
+            if (!this.gameActive) {
+                document.getElementById('next-btn').style.display = 'block';
+                if (this.idx > 0) document.getElementById('prev-btn').style.display = 'block';
+            }
         },
         
         update() {
@@ -229,12 +241,15 @@
             
             const overlay = document.getElementById('overlay');
             if (s.hasGame) {
+                this.gameActive = true; // Устанавливаем флаг игры
                 this.score = 0;
                 document.getElementById('fill').style.width = '0%';
                 overlay.style.display = 'flex';
+                overlay.classList.remove('fail-state');
                 document.getElementById('game-title').innerText = s.hasGame === "train" ? "ДАВИ ТЯГУ!" : "ОТБЕРИ НАГГЕТСЫ!";
                 this.startDrain(s.hasGame);
             } else {
+                this.gameActive = false;
                 overlay.style.display = 'none';
                 this.stopDrain();
             }
@@ -254,22 +269,46 @@
         stopDrain() { if (this.drainInterval) clearInterval(this.drainInterval); },
 
         next() {
-            if (this.isTyping || this.story[this.idx].hasGame) return;
+            if (this.isTyping || this.gameActive) return;
             this.idx = (this.idx + 1) % this.story.length;
             this.update();
         },
 
+        prev() {
+            if (this.isTyping) { clearInterval(this.textTimer); this.isTyping = false; }
+            if (this.idx > 0) { this.idx--; this.update(); }
+        },
+
         tap(e) {
-            e.preventDefault();
-            if (!this.story[this.idx].hasGame) return;
+            e.preventDefault(); e.stopPropagation();
+            if (!this.gameActive) return;
             const type = this.story[this.idx].hasGame;
             this.score += (type === "train") ? 9 : 11;
             
+            // Логика для Гоши (Наггетсы)
+            if (type === "nuggets" && this.score >= 90) {
+                this.stopDrain();
+                this.gameActive = false; // Отключаем игру
+                const overlay = document.getElementById('overlay');
+                const container = document.getElementById('game-container');
+                overlay.classList.add('fail-state');
+                container.classList.add('long-shake', 'red-alert');
+                this.score = 0;
+                document.getElementById('fill').style.width = '0%';
+                setTimeout(() => {
+                    container.classList.remove('long-shake', 'red-alert');
+                    overlay.classList.remove('fail-state');
+                    this.next(); // Переход дальше
+                }, 1800);
+                return;
+            }
+
+            // Логика для Поезда (Победа)
             if (this.score >= 100) {
                 this.score = 100;
                 document.getElementById('fill').style.width = '100%';
                 this.stopDrain();
-                this.story[this.idx].hasGame = false;
+                this.gameActive = false;
                 setTimeout(() => this.next(), 200);
             } else {
                 document.getElementById('fill').style.width = this.score + '%';
