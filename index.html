@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sanya Quest V 8.0 - Full Original Logic</title>
+    <title>Sanya Quest V 7.6 - Final Chapter</title>
     <style>
         body { margin: 0; background: #000; color: #fff; font-family: 'Georgia', serif; overflow: hidden; touch-action: manipulation; }
         #game-container { display: none; flex-direction: column; width: 100vw; height: 100vh; position: relative; background: #000; }
         
         #version-tag { position: fixed; top: 10px; left: 60px; z-index: 4000; color: #fc0; font-weight: bold; font-size: 18px; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; }
-        
+
         #start-screen, #end-screen, #fail-screen { position: fixed; top:0; left:0; width: 100%; height:100%; background: radial-gradient(circle, #222 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/Zz1Zgx4p/Chat-GPT-Image-21-2026-02-12-47.png'); background-size: cover; z-index: 2100; }
         #fail-screen { display: none; background: #900; z-index: 2500; }
-        #end-screen { display: none; background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://i.ibb.co/HTZqmm91/photo-2026-04-20-12-40-14.jpg'); background-size: cover; z-index: 2100; }
 
         .main-btn { background: #fc0; color: #000; border: none; padding: 20px 50px; font-weight: bold; font-size: 20px; border-radius: 50px; cursor: pointer; box-shadow: 0 0 30px rgba(252, 204, 0, 0.5); margin-bottom: 15px; }
         .reset-btn { background: transparent; color: #666; border: 1px solid #444; padding: 10px 20px; font-size: 13px; border-radius: 5px; cursor: pointer; }
@@ -22,26 +22,32 @@
 
         #scene { position: absolute; top: 0; left: 0; width: 100%; height: 65%; background-size: cover; background-position: center; transition: filter 0.5s; }
         .focus-mode { filter: blur(5px) brightness(0.4); }
-
+        
         #hero { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 95%; z-index: 5; display: none; pointer-events: none; transition: opacity 0.5s ease; filter: drop-shadow(0 0 25px rgba(0,0,0,0.9)); transform-origin: bottom center; }
-
-        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; cursor: pointer; }
-        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; pointer-events: none; }
-        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; }
-        #text { font-size: 17px; line-height: 1.4; color: #eee; }
-
+        
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         #bar-container { width: 75%; height: 35px; border: 3px solid #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; background: rgba(255,255,255,0.1); }
         #fill { width: 0%; height: 100%; background: #fc0; transition: width 0.08s linear; }
+        
+        #ui { position: absolute; bottom: 0; width: 100%; height: 35%; background: #000; border-top: 3px solid #fc0; display: flex; flex-direction: column; box-sizing: border-box; padding: 15px 20px; z-index: 100; cursor: pointer; }
+        #text-area { flex-grow: 1; overflow-y: auto; padding-bottom: 45px; position: relative; pointer-events: none; }
+        
+        #choice-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 110; cursor: default; }
+        .choice-btn { background: #222; color: #fc0; border: 1px solid #fc0; padding: 12px 20px; margin: 8px; width: 85%; border-radius: 5px; font-size: 16px; cursor: pointer; }
 
         #next-btn { position: absolute; bottom: 15px; right: 20px; background: #fc0; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
         #prev-btn { position: absolute; bottom: 15px; left: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid #444; padding: 12px 20px; cursor: pointer; display: none; border-radius: 5px; z-index: 105; }
 
+        #name { font-weight: bold; font-size: 18px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; }
+        #text { font-size: 17px; line-height: 1.4; color: #eee; pointer-events: none; }
+        
         #sound-btn { position: fixed; top: 10px; left: 10px; z-index: 3000; font-size: 20px; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #fc0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
 
         .shake-text { display: inline-block; animation: text-shake-anim 0.2s infinite; color: #f44 !important; }
-        .heart-text { display: inline-block; color: #ff69b4 !important; text-shadow: 0 0 10px rgba(255,105,180,0.8); }
-        @keyframes text-shake-anim { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -1px); } 50% { transform: translate(-1px, 1px); } 100% { transform: translate(1px, 1px); } }
+        @keyframes text-shake-anim { 0% { transform: translate(1px, 1px); } 25% { transform: translate(-1px, -1px); } 50% { transform: translate(-1px, 1px); } 75% { transform: translate(1px, -1px); } 100% { transform: translate(1px, 1px); } }
+
+        .heart-text { display: inline-block; color: #ff69b4 !important; text-shadow: 0 0 10px rgba(255,105,180,0.8); font-weight: bold; animation: pulse-heart 1.5s infinite; }
+        @keyframes pulse-heart { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
         
         .hero-enter { animation: hero-enter-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1) forwards; }
         @keyframes hero-enter-anim { from { opacity: 0; transform: translate(-50%, 40px); } to { opacity: 1; transform: translate(-50%, 0); } }
@@ -55,10 +61,10 @@
     </style>
 </head>
 <body>
-    <div id="version-tag">V 8.0</div>
+    <div id="version-tag">V 7.6</div>
 
     <div id="start-screen">
-        <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST V 8.0</h1>
+        <h1 style="color:#fc0; font-size: 40px; margin-bottom: 30px;">SANYA QUEST</h1>
         <button class="main-btn" onclick="game.init()">ПРОДОЛЖИТЬ</button>
         <button class="reset-btn" onclick="game.confirmReset()">СБРОСИТЬ ПРОГРЕСС</button>
     </div>
@@ -69,7 +75,7 @@
     </div>
 
     <div id="end-screen">
-        <h2 style="color:#fc0; font-size: 32px; margin-bottom: 10px;">ГЛАВА ЗАВЕРШЕНА</h2>
+        <h2 style="color:#fc0; font-size: 32px; margin-bottom: 20px;">КОНЕЦ ГЛАВЫ</h2>
         <button class="main-btn" onclick="game.resetSave()">В НАЧАЛО</button>
     </div>
 
@@ -88,8 +94,8 @@
             <div id="choice-container"></div>
             <div id="name">САНЯ</div>
             <div id="text-area"><div id="text"></div></div>
-            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">← Назад</button>
-            <button id="next-btn" onclick="event.stopPropagation(); game.next()">ДАЛЕЕ →</button>
+            <button id="prev-btn" onclick="event.stopPropagation(); game.prev()">←</button>
+            <button id="next-btn" onclick="event.stopPropagation(); game.next()">ПРОДОЛЖИТЬ →</button>
         </div>
     </div>
 
@@ -108,20 +114,21 @@
             bar_bg: "https://i.ibb.co/39R0LNDX/1776641464055.png",
             home_bg: "https://i.ibb.co/mrWfGrYh/1776641563597.png",
             dima: "https://i.ibb.co/0jMLHKCT/1776641481868.png",
+            dima_home: "https://i.ibb.co/3mNShXVr/photo-2026-04-20-16-18-57.jpg",
+            gosha: "https://i.ibb.co/CLDvbjB/1776641475450.png",
             gosha_food: "https://i.ibb.co/mFGx7Bbg/photo-2026-04-20-16-08-46.jpg",
             gosha_troll: "https://i.ibb.co/jPHM7bvj/photo-2026-04-20-16-06-59.jpg",
-            
-            /* НОВЫЕ ИЗОБРАЖЕНИЯ ИЗ ЗАПРОСА 8.0 */
             artur_sonya: "https://i.ibb.co/RT7Cx4hr/df3f4211-edb6-4300-a816-ae9feaef3bda.png",
             sonya_alone: "https://i.ibb.co/7tVzn2Zx/Chat-GPT-Image-21-2026-01-11-15.png",
-            sanya_awkward: "https://i.i.ibb.co/G43bk8f3/Chat-GPT-Image-21-2026-02-48-37.png",
             artur_alone: "https://i.ibb.co/MkyMz1qd/image-1776707959628128.png",
+            artur_chat: "https://i.ibb.co/TBDJKH77/Chat-GPT-Image-21-2026-02-55-33.png",
+            sanya_awkward: "https://i.ibb.co/G43bk8f3/Chat-GPT-Image-21-2026-02-48-37.png",
+            easter_eggs: "https://i.ibb.co/20QGcHYy/2112f813-76ff-4959-8407-9d040cd32d81.png",
+            movie_night: "https://i.ibb.co/0VVBDnvL/f852f0f3-72ae-4c2e-a796-23b7b9f3096e.png",
             tattoo_work: "https://i.ibb.co/XZ4CnSBp/Chat-GPT-Image-21-2026-02-05-41.png",
             katya_love: "https://i.ibb.co/gZYcRHtd/9304cf07-26b7-4f8f-98c9-dc16011a40a1.png",
             the_kiss: "https://i.ibb.co/s8SJrcp/8a8731f4-a7c7-4f05-a492-8de012834638.png",
-            final_park: "https://i.ibb.co/Zz1Zgx4p/Chat-GPT-Image-21-2026-02-12-47.png",
-            hobbit_watch: "https://i.ibb.co/0VVBDnvL/f852f0f3-72ae-4c2e-a796-23b7b9f3096e.png",
-            easter_eggs: "https://i.ibb.co/20QGcHYy/2112f813-76ff-4959-8407-9d040cd32d81.png"
+            final_park: "https://i.ibb.co/Zz1Zgx4p/Chat-GPT-Image-21-2026-02-12-47.png"
         },
         colors: { 
             "Саня": "#fc0", "Дима": "#ff3030", "Гоша": "#30ff30", 
@@ -129,7 +136,6 @@
             "Соня": "#ff66cc", "Катя": "#b388ff" 
         },
         story: [
-            /* ПОЛНЫЙ ОРИГИНАЛЬНЫЙ СЮЖЕТ 7.6 */
             { n: "Саня", t: "Доброе утро, я проснулся... Снова этот потолок. Снова этот город. Орск, ты меня когда-нибудь отпустишь?", b: 'morning', c: 'morning' },
             { n: "Работа", t: "Так, смена началась. Погнали давить тягу! Поднажми, Саня, график сам себя не закроет!", b: 'work', c: 'work', hasGame: "train" },
             { n: "Саня", t: "Фух, наконец-то отпуск! РЖД, прощай на две недели. На билеты накопил, чемодан собрал. Лечу в Москву!", b: 'airport', c: 'airport' },
@@ -143,37 +149,35 @@
             { n: "Гоша", t: "Машинист прибыл по расписанию! Ну что, по первой за приезд?", b: 'bar_bg', c: 'gosha' },
             { n: "Рассказчик", t: "Ночь медленно опустилась на столицу. Пацаны перебрались на кухню к Диме.", b: 'home_bg', c: 'none', choices: ["Рассказать всё как есть", "Отшутиться"] },
             { n: "Саня", t: "Пацаны... я должен вам выговориться. Меня эта ситуация с Катей просто уничтожает. Я люблю её так, что дышать больно.", b: 'home_bg', c: 'none' },
-            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро.", b: 'home_bg', c: 'dima' },
-            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha' },
+            { n: "Дима", t: "Сань, не держи в себе. Она классная девчонка, но ты себя не грызи. Мы с тобой, бро.", b: 'home_bg', c: 'dima_home' },
+            { n: "Гоша", t: "Правильно Диман говорит! Ты мужик, Саня. О, доставка как раз вовремя!", b: 'home_bg', c: 'gosha_food' },
             { n: "Гоша", t: "Так, стоять! Наггетсы мои, я их только на себя одного заказывал!", b: 'home_bg', c: 'gosha_food' },
-            { n: "Дима", t: "Ха-ха-ха! Гошан, хорош заливать, делись давай!", b: 'home_bg', c: 'dima', effect: 'shake-quick' },
+            { n: "Дима", t: "Ха-ха-ха! Гошан, хорош заливать, делись давай!", b: 'home_bg', c: 'dima_home', effect: 'shake-quick' },
             { n: "Саня", t: "Ну всё, Гоша, ты сам напросился! Пацаны, в атаку на коробку!", b: 'home_bg', c: 'none', hasGame: "nuggets", shakeOnType: true },
             { n: "Гоша", t: "Ахахах ребята вы правда думали что сможете это сделать? Все наггетсы мои!", b: 'home_bg', c: 'gosha_troll' },
-            { n: "Рассказчик", t: "Тяжесть на душе начала понемногу отпускать. Продолжение следует...", b: 'home_bg', c: 'none' },
-            
-            /* НОВЫЕ СЦЕНЫ 8.0 НАЧИНАЮТСЯ ЗДЕСЬ */
-            { n: "Саня", t: "Спасибо, пацаны. Вы лучшие. Но мне пора собирать вещи. Беру билеты в Оренбург — поеду к Артуру и Соне.", b: 'home_bg', c: 'none' },
-            { n: "Рассказчик", t: "Саня попрощался с друзьями и сел в самолет.", b: 'airport', c: 'airport' },
-            { n: "Артур", t: "Салам, Саня! Заходи, бауырым, располагайся!", b: 'artur_sonya', c: 'none' },
-            { n: "Соня", t: "Саша, привет! Как добрался? Мы тебя так ждали!", b: 'artur_sonya', c: 'none' },
-            { n: "Рассказчик", t: "Вечером Артур дал Сане наставление.", b: 'morning', c: 'none' },
-            { n: "Артур", t: "Салам, Саня! Жизнь — она как железная дорога. Не сворачивай с рельс своего сердца, брат. Всё будет чётко, давай!", b: 'artur_alone', c: 'none' },
-            { n: "Соня", t: "Саша, ты же с Катей общаешься. Мы завтра с Артуром уезжаем, квартира свободна. Позови её. Яйца красить не умеешь — это отличный повод, она точно придёт помочь!", b: 'sonya_alone', c: 'none' },
-            { n: "Саня", t: "Я так и сделал. И она согласилась! Но я в панике написал Артуру сообщение: 'Брат, как вообще варить яйца?!'", b: 'easter_eggs', c: 'none' },
-            { n: "Артур", t: "Ахаха, Саня, ну ты даёшь! Машинист тяжелых составов боится куриного яйца! Кидай в воду и таймер ставь. Не позорь меня перед дамой, мамбетка!", b: 'artur_alone', c: 'none' },
-            { n: "Рассказчик", t: "Сане стало жутко неловко от подколов Артура. Лицо предательски покраснело.", b: 'sanya_awkward', c: 'none' },
-            { n: "Рассказчик", t: "Но пришла Катя. Они вместе смеялись, красили яйца, а потом он угостил её куличом.", b: 'easter_eggs', c: 'none' },
-            { n: "Рассказчик", t: "Они включили 'Хоббита' и мило лежали вместе на диване.", b: 'hobbit_watch', c: 'none' },
-            { n: "Рассказчик", t: "Воздух искрился от напряжения, но до поцелуя так и не дошло.", b: 'hobbit_watch', c: 'none' },
-            { n: "Рассказчик", t: "Прошло пару дней. Саня пришел к ней в тату-салон. Катя била ему татуировку и была предельно сосредоточена.", b: 'tattoo_work', c: 'none' },
-            { n: "Катя", t: "Саш... мы расстались с моим парнем.", b: 'tattoo_work', c: 'none' },
+            { n: "Саня", t: "Спасибо, пацаны. Вы лучшие. Но мне пора собирать вещи. Я беру билеты в Оренбург — поеду к Артуру и Соне.", b: 'home_bg', c: 'none' },
+            { n: "Рассказчик", t: "Саня попрощался с друзьями и сел в самолет до Оренбурга.", b: 'airport', c: 'airport' },
+            { n: "Артур", t: "Салам, Саня! Бауырым, рад видеть! Заходи, располагайся, чувствуй себя как дома.", b: 'artur_sonya', c: 'none' },
+            { n: "Соня", t: "Саша, привет! Как добрался? Проходи на кухню, я уже чайник поставила.", b: 'artur_sonya', c: 'none' },
+            { n: "Соня", t: "Сань... я же с Катей общаюсь. И вижу, как ты на неё смотришь. Знаешь, мы с Артуром завтра в Казахстан уезжаем на неделю. Квартира свободна.", b: 'sonya_alone', c: 'none' },
+            { n: "Соня", t: "Позови её к себе. Как раз Пасха на носу. Скажи, что яйца красить не умеешь — она точно придёт помочь. Действуй!", b: 'sonya_alone', c: 'none' },
+            { n: "Артур", t: "Салам, Саня! Слушай сюда. Жизнь — она как железная дорога. Не сворачивай с рельс своего сердца.", b: 'artur_alone', c: 'none' },
+            { n: "Артур", t: "Ты же не мамбетка какая-то, будь мужиком! Всё будет чётко, давай, брат!", b: 'artur_alone', c: 'none' },
+            { n: "Рассказчик", t: "На следующее утро Артур и Соня уехали. Саня остался один в тихой квартире, ожидая Катю... и тут его накрыла паника.", b: 'home_bg', c: 'none' },
+            { n: "Саня", t: "Я понял, что совершенно не умею готовить к празднику! Достал телефон и быстро набрал Артуру: 'Брат, спасай! Как вообще варить эти яйца, чтобы они не взорвались?!'", b: 'artur_chat', c: 'none' },
+            { n: "Артур", t: "Ахаха, Саня, ну ты даёшь! Машинист тяжелых составов боится куриного яйца! Кидай в воду и таймер ставь. Не позорь меня перед дамой!", b: 'artur_chat', c: 'none' },
+            { n: "Рассказчик", t: "Сане стало жутко неловко от подколов Артура. Он представил, как нелепо будет выглядеть, если Катя застанет его за битвой с кастрюлей.", b: 'sanya_awkward', c: 'none' },
+            { n: "Рассказчик", t: "Но всё прошло идеально. Пришла Катя, они вместе смеялись, красили яйца, а потом он угостил её куличом.", b: 'easter_eggs', c: 'none' },
+            { n: "Рассказчик", t: "Они включили 'Хоббита', укрылись пледом и мило лежали вместе в полумраке комнаты.", b: 'movie_night', c: 'none' },
+            { n: "Рассказчик", t: "Воздух искрился от напряжения и нежности, но до поцелуя так и не дошло.", b: 'movie_night', c: 'none' },
+            { n: "Рассказчик", t: "Прошло пару дней. Саня пришел к Кате в салон. Жужжание машинки, запах антисептика... Катя била ему татуировку.", b: 'tattoo_work', c: 'none' },
+            { n: "Катя", t: "Саш... мне нужно тебе кое-что сказать. Я рассталась с ним. Совсем.", b: 'tattoo_work', c: 'none' },
             { n: "Катя", t: "И я поняла... я люблю тебя. Давно люблю. ♥♥♥", b: 'katya_love', c: 'none', isHeart: true },
-            { n: "Рассказчик", t: "Саша замер. Он не верил своим ушам. Для него это был лучший день в жизни, он совершенно такого не ожидал!", b: 'katya_love', c: 'none', isHeart: true },
-            { n: "Рассказчик", t: "Она осторожно берет его за щеку теплой ладонью...", b: 'the_kiss', c: 'none' },
-            { n: "Рассказчик", t: "Первый поцелуй. чувства переполняют обоих.", b: 'the_kiss', c: 'none' },
-            { n: "Рассказчик", t: "Следующий день они провели в парке аттракционов. Ветер в лицо, смех и её рука в его руке.", b: 'final_park', c: 'none' },
-            { n: "Рассказчик", t: "Они и подумать не могли, что всё так сложится. У Кати был парень, а Саня просто любил её тайно.", b: 'final_park', c: 'none' },
-            { n: "Рассказчик", t: "Артур и Соня уехали в Казахстан. Но судьба распорядилась иначе. И они оба очень счастливы. Конец.", b: 'final_park', c: 'none' }
+            { n: "Рассказчик", t: "Саша замер. Он не верил своим ушам. Оказывается, он ей тоже безумно давно нравился.", b: 'katya_love', c: 'none', isHeart: true },
+            { n: "Рассказчик", t: "Она осторожно откладывает машинку и берет его за щеку теплой ладонью. Их взгляды встречаются...", b: 'the_kiss', c: 'none' },
+            { n: "Рассказчик", t: "Первый поцелуй. Долгий, нежный и невероятно искренний. Мир вокруг просто перестал существовать.", b: 'the_kiss', c: 'none' },
+            { n: "Рассказчик", t: "Весь следующий день они провели вместе. Гуляли по городу, смеялись и катались на аттракционах.", b: 'final_park', c: 'none' },
+            { n: "Рассказчик", t: "Они и подумать не могли, что всё сложится именно так сказочно. Долгая дорога привела его к счастью. Конец.", b: 'final_park', c: 'none' }
         ],
 
         async init() {
